@@ -12,17 +12,19 @@ Development approach (from README.md): built using TDD (tests written before imp
 
 ## Commands
 
+Use pnpm for all package management and script execution — this project does not use npm or yarn (`packageManager` field in package.json; a `pnpm-workspace.yaml` exists but defines no workspace packages, only `allowBuilds` overrides).
+
 - `pnpm dev` — start the dev server
 - `pnpm build` — production build
 - `pnpm start` — run the production build
 - `pnpm lint` — run ESLint (flat config in `eslint.config.mjs`, extends `eslint-config-next`'s core-web-vitals + typescript configs)
+- `pnpm tsc --noEmit` — type check without emitting output
 
 No test runner is configured yet — there is no `pnpm test` script.
 
-Package manager is pnpm (`packageManager` field in package.json); a `pnpm-workspace.yaml` exists but defines no workspace packages, only `allowBuilds` overrides.
-
 ## Architecture
 
-- App Router, `src/` layout, TypeScript strict mode. Import alias `@/*` maps to `./src/*` (tsconfig.json).
-- Tailwind CSS v4, configured via the `@tailwindcss/postcss` PostCSS plugin (no `tailwind.config.js` — v4 uses CSS-based `@theme` config directly in `src/app/globals.css`).
+- App Router, `src/` layout. Import alias `@/*` maps to `./src/*` (tsconfig.json).
+- TypeScript strict mode is always on (`strict: true` in tsconfig.json) — do not weaken this or add `any` escape hatches to get around it.
+- Tailwind CSS v4 is used for all styling; do not use inline `style` props or separate CSS files/modules except `src/app/globals.css` for the Tailwind import and theme tokens. Configured via the `@tailwindcss/postcss` PostCSS plugin (no `tailwind.config.js` — v4 uses CSS-based `@theme` config directly in `src/app/globals.css`).
 - `AGENTS.md` in the repo root is auto-generated and rewritten by `next dev` itself (Next.js 16 behavior, not a Claude Code artifact) — it will reappear even if deleted. It notes that this Next.js version has breaking changes vs. older training data and points to `node_modules/next/dist/docs/` for the current APIs/conventions before writing framework code.
