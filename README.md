@@ -1,5 +1,4 @@
 # Habit Tracker
-test
 
 A habit tracking web app for building and maintaining daily habits, tracking streaks and completion stats.
 
@@ -9,7 +8,7 @@ Next.js 16, React, TypeScript, Tailwind CSS, Supabase (PostgreSQL), Jest, React 
 
 ## AI tooling
 
-Built using Claude Code
+Built using Claude Code and the Context7 MCP server for up-to-date, version-specific library documentation during development.
 
 ## Live demo
 
