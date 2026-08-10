@@ -6,11 +6,11 @@ This document records the non-obvious architectural and product decisions behind
 
 ### The core metric rewards showing up, not perfection
 
-**Decision:** the headline stat is a "showing-up streak" — the number of consecutive local days with *at least one* habit completed — rather than a focus on how many "perfect" consecutive days a user had (completing all habits every day) or a potentially demotivating stat about weekly/monthly completion percentage (e.g. "9/28 habits done this week") if the completion rate is ever low.
+**Decision:** the headline stat is a "showing-up streak" — the number of consecutive local days with _at least one_ habit completed — rather than a focus on how many "perfect" consecutive days a user had (completing all habits every day) or a potentially demotivating stat about weekly/monthly completion percentage (e.g. "9/28 habits done this week") if the completion rate is ever low.
 
-**Why:** this draws directly on habit-formation research — James Clear's *Atomic Habits* and its "never miss twice" principle, and the older "Don't Break the Chain" (Seinfeld) method — where showing up consistently matters more than performing perfectly on any given day. A streak that only requires *one* habit to keep it alive rewards that philosophy directly, and doing so was a deliberate product choice, not just an implementation shortcut.
+**Why:** this draws directly on habit-formation research — James Clear's _Atomic Habits_ and its "never miss twice" principle, and the older "Don't Break the Chain" (Seinfeld) method — where showing up consistently matters more than performing perfectly on any given day. A streak that only requires _one_ habit to keep it alive rewards that philosophy directly, and doing so was a deliberate product choice, not just an implementation shortcut.
 
-**Alternatives considered and rejected:** completion-rate stats (habits done / habits possible, over a week or month) were considered and rejected — they can read as failure-framed and demotivating, and they don't reward partial engagement on a day where the user did *something* but not everything that week/month. This could be especially de-motivating if the user did very well during some of the week/month, but wasn't able to do well for the whole of the week/month. The user can't achieve a great score if they started off badly and got better towards the end of a week/month, which could detract from good effort they've put in later in the week/month.
+**Alternatives considered and rejected:** completion-rate stats (habits done / habits possible, over a week or month) were considered and rejected — they can read as failure-framed and demotivating, and they don't reward partial engagement on a day where the user did _something_ but not everything that week/month. This could be especially de-motivating if the user did very well during some of the week/month, but wasn't able to do well for the whole of the week/month. The user can't achieve a great score if they started off badly and got better towards the end of a week/month, which could detract from good effort they've put in later in the week/month.
 
 ## Data & backend
 
@@ -77,3 +77,11 @@ This document records the non-obvious architectural and product decisions behind
 **Decision:** the initial data fetch (fetching habits + their completion statuses) has no Suspense-driven skeleton UI elements shown via a `loading.tsx` page.
 
 **Why:** the dataset is small by design — likely a small number of habits and potentially in the low hundreds of completion rows per a year — so the server fetching should be near-instant. Adding a loading skeleton for a fast fetch would add complexity without a user-visible benefit. This has been deemed a small and isolated addition to add later if the initial load feels slow enough to confuse a user in production.
+
+## Development workflow tooling
+
+### `/commit` and `/push-pr` skills require explicit invocation - not implicitly invoked by Claude
+
+**Decision:** both skills set `disable-model-invocation: true` in their frontmatter. This means Claude can never trigger them on its own from a natural language prompt - only explicitly typing the `/commit` or `/push-pr` command runs them. Most Claude Code skills default the other way: Claude can invoke them automatically whenever a request matches their description, with no explicit command required.
+
+**Why:** committing, pushing to the shared GitHub remote, and opening a public pull request are hard-to-reverse, visible-to-others actions. Left auto-invocable, Claude could decide on its own — from a message as mild as "I think this potentially could be ready" - to commit, push, and open a PR without ever being explicitly asked to. `disable-model-invocation: true` is the mechanism Claude Code provides specifically for this: it turns off only Claude's ability to automatically invoke these skills, and leaves explicit skill invocations (`/commit`, `/push-pr`) fully intact. Any other future skill in this project's toolkit could potentially stay automatically executable by default, I just wanted to disable these particular skills that may have unwanted side effects if invoked accidentally to provide some level of safety.
