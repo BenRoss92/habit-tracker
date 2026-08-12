@@ -28,6 +28,8 @@ process.stdin.on("end", () => {
       stdio: ["ignore", "ignore", "pipe"],
     });
   } catch (err) {
-    process.stderr.write(`prettier format hook failed for ${filePath}:\n${err.stderr ?? err.message}\n`);
+    process.stderr.write(
+      `prettier format hook failed for ${filePath}:\n${err.stderr ?? err.message}\n`,
+    );
   }
 });

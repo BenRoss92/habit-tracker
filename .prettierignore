@@ -3,3 +3,4 @@ node_modules/
 out/
 build/
 public/
+pnpm-lock.yaml
