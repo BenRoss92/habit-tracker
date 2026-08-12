@@ -31,7 +31,12 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# Safely stop any future local secret files 
+# from being staged
 .env*
+# Explicitly track only the example local
+# secret file - no other potential secret files
+!.env.local.example
 
 # vercel
 .vercel
