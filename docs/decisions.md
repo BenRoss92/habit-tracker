@@ -72,11 +72,11 @@ This document records the non-obvious architectural and product decisions behind
 
 **Why:** Playwright would add real value in exactly the area most discussed above — the true end-to-end behavior of a mutation hitting a real server with real network timing, which Jest mocks can only approximate. But it also needs its own infrastructure to be safe: a separate Supabase project so test runs don't pollute real production habit data, plus wiring a CI pipeline to run a live version of the app against it. For a personal, single-user app already covered by unit tests on the logic/components/actions and a manual check of potentially the trickiest failure path, this infrastructure cost may not be needed yet. This has been noted here as a reasonable future addition if the app grows, but has not been deemed as a day-one requirement.
 
-### No `loading.tsx` for the initial page load, for now
+### `loading.tsx` shown during the initial fetch and on every retry
 
-**Decision:** the initial data fetch (fetching habits + their completion statuses) has no Suspense-driven skeleton UI elements shown via a `loading.tsx` page.
+**Decision:** `app/loading.tsx` renders a simple loading message while `fetchHabits()` is in flight — both on the very first page load and every time `error.tsx`'s "Try again" button re-triggers the fetch.
 
-**Why:** the dataset is small by design — likely a small number of habits and potentially in the low hundreds of completion rows per a year — so the server fetching should be near-instant. Adding a loading skeleton for a fast fetch would add complexity without a user-visible benefit. This has been deemed a small and isolated addition to add later if the initial load feels slow enough to confuse a user in production.
+**Why:** the original reasoning against a first-load skeleton still holds on its own: the dataset is small by design — likely a small number of habits and potentially in the low hundreds of completion rows per a year — so the server fetch is near-instant, and a skeleton for that case alone would add complexity without much visible benefit. But once `error.tsx`'s retry button existed, a real gap opened: clicking "Try again" left the user staring at the same error message with no feedback that a request was actually in flight, which would be especially confusing if the retry failed and showed the identical error screen again. `loading.tsx` closes that gap for free via the App Router's file convention — no extra wiring needed beyond the file existing — so keeping it was preferred over building retry-specific loading feedback some other way.
 
 ## Development workflow tooling
 
@@ -85,6 +85,12 @@ This document records the non-obvious architectural and product decisions behind
 **Decision:** both skills set `disable-model-invocation: true` in their frontmatter. This means Claude can never trigger them on its own from a natural language prompt - only explicitly typing the `/commit` or `/push-pr` command runs them. Most Claude Code skills default the other way: Claude can invoke them automatically whenever a request matches their description, with no explicit command required.
 
 **Why:** committing, pushing to the shared GitHub remote, and opening a public pull request are hard-to-reverse, visible-to-others actions. Left auto-invocable, Claude could decide on its own — from a message as mild as "I think this potentially could be ready" - to commit, push, and open a PR without ever being explicitly asked to. `disable-model-invocation: true` is the mechanism Claude Code provides specifically for this: it turns off only Claude's ability to automatically invoke these skills, and leaves explicit skill invocations (`/commit`, `/push-pr`) fully intact. Any other future skill in this project's toolkit could potentially stay automatically executable by default, I just wanted to disable these particular skills that may have unwanted side effects if invoked accidentally to provide some level of safety.
+
+### `/review` — a third explicitly-invoked skill, for thorough pre-PR checks
+
+**Decision:** alongside `/commit` and `/push-pr`, a third skill, `/review`, also sets `disable-model-invocation: true`. Unlike the other two, `/review` has no side effects on the repo or GitHub — it's a read-only, findings-only check — but it's still explicit-invocation-only, reserved for a deliberate, thorough pass: diffing the branch against `main`, cross-referencing `README.md`, this file, `CLAUDE.md`, and any relevant `~/.claude/plans/*.md` files for conflicts or staleness, sweeping for dead code, and independently re-running `pnpm test`/`tsc`/`lint` rather than trusting anything claimed earlier in conversation. Quick "am I on track" sanity checks mid-work happen through ordinary conversation instead, not through this skill.
+
+**Why:** even though `/review` doesn't push code or open PRs, keeping it explicit-invocation matches its intended cadence — a deliberate "give me the full picture" request before a commit or PR feels ready, not something that should fire on a casual comment like "I think this looks right." Keeping it findings-only (it never edits a file itself, even when it finds a stale doc or a real bug, and reports back for the developer to decide instead) keeps the same trust model as the rest of this toolkit: Claude reports, the developer decides.
 
 ### Context7 MCP is configured at user scope, not project scope
 

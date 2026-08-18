@@ -8,7 +8,7 @@ A habit tracking web app for building and maintaining daily habits, tracking str
 
 Development approach (from README.md): built using TDD (tests written before implementation) and BDD-style component tests (describing behavior from the user's perspective, not implementation details), delivered as vertical slices — each feature cut through the full stack (UI → business logic → database) so it's immediately usable, rather than built layer-by-layer.
 
-**Current state:** freshly scaffolded via `create-next-app`; `src/app/page.tsx` is still the unmodified starter page. No Supabase, Jest, or CI setup exists yet.
+**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. No habit creation/editing/deletion, streaks, or CI setup exists yet.
 
 ## Commands
 
@@ -19,8 +19,8 @@ Use pnpm for all package management and script execution — this project does n
 - `pnpm start` — run the production build
 - `pnpm lint` — run ESLint (flat config in `eslint.config.mjs`, extends `eslint-config-next`'s core-web-vitals + typescript configs)
 - `pnpm tsc --noEmit` — type check without emitting output
-
-No test runner is configured yet — there is no `pnpm test` script.
+- `pnpm test` — run the Jest test suite
+- `pnpm test:watch` — run Jest in watch mode
 
 ## Architecture
 
