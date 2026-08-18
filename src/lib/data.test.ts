@@ -30,7 +30,7 @@ import { Habit } from "./types";
 
 describe("Data fetching", () => {
   describe("fetchHabits", () => {
-    test("should return an array of habits when select query is successful", async () => {
+    it("should return an array of habits when select query is successful", async () => {
       mockSelect.mockResolvedValueOnce({ data: habits, error: null });
 
       const result = await fetchHabits();
@@ -38,13 +38,13 @@ describe("Data fetching", () => {
       expect(result).toStrictEqual(habits);
     });
 
-    test("should throw when an unexpected Supabase error occurs", async () => {
+    it("should throw when an unexpected Supabase error occurs", async () => {
       mockSelect.mockRejectedValueOnce(new Error("Unexpected failure"));
 
       await expect(fetchHabits()).rejects.toThrow("Failed to fetch habits");
     });
 
-    test("should throw when the select query returns an error", async () => {
+    it("should throw when the select query returns an error", async () => {
       mockSelect.mockResolvedValueOnce({ data: null, error: new Error("Network error") });
 
       await expect(fetchHabits()).rejects.toThrow("Failed to fetch habits");

@@ -3,23 +3,41 @@ import userEvent from "@testing-library/user-event";
 import ErrorPage from "@/app/error";
 
 describe("Error boundary", () => {
-  const error = new Error("Failed to fetch habits");
+  // A generic Error, standing in for whatever actually failed - ErrorPage doesn't inspect the
+  // error's contents, so these tests aren't specific to any one feature that might throw.
+  const error = new Error("Something went wrong");
 
-  test("should show a friendly message and a 'Try again' button", () => {
-    render(<ErrorPage error={error} retry={jest.fn()} />);
+  describe("given an error occurred", () => {
+    it("then shows a friendly message and a 'Try again' button", () => {
+      render(<ErrorPage error={error} retry={jest.fn()} />);
 
-    expect(screen.getByText("Something went wrong while loading your habits.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
-  });
+      expect(
+        screen.getByText("Something went wrong while loading your habits."),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    });
 
-  test("clicking 'Try again' calls retry", async () => {
-    const user = userEvent.setup();
-    const retry = jest.fn();
+    it("then logs the error for debugging", () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-    render(<ErrorPage error={error} retry={retry} />);
+      render(<ErrorPage error={error} retry={jest.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "Try again" }));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
 
-    expect(retry).toHaveBeenCalledTimes(1);
+      consoleErrorSpy.mockRestore();
+    });
+
+    describe("when the user clicks 'Try again'", () => {
+      it("then tries again", async () => {
+        const user = userEvent.setup();
+        const retry = jest.fn();
+
+        render(<ErrorPage error={error} retry={retry} />);
+
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        expect(retry).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });

@@ -66,6 +66,12 @@ This document records the non-obvious architectural and product decisions behind
 
 ## Testing strategy
 
+### Given/When/Then naming in plain Jest/RTL, not Gherkin/Cucumber
+
+**Decision:** BDD is showcased through explicit Given/When/Then naming in nested `describe`/`it` blocks (e.g. `describe("given an error occurred")` → `describe("when the user clicks 'Try again'")` → `it("then tries again")`), written directly in the existing Jest/RTL test files - not through Gherkin `.feature` files and a library like `jest-cucumber`. This applies specifically to component/UI tests describing end-user-observable behaviour; data-layer tests (e.g. `fetchHabits()`'s success/failure contract in `data.test.ts`) stay as plain descriptive unit tests, since their caller is other code, not an end user, so there's no user-perspective behaviour to phrase as Given/When/Then.
+
+**Why:** the same reasoning already applied to the Playwright decision below - real Gherkin/Cucumber tooling adds genuine machinery (a new dependency, a `.feature` file plus a separate step-definition file per behaviour, and a layer of indirection between the human-readable scenario and the code that runs it) for a solo project where the person reading the acceptance criteria and the person writing the step definitions are the same person. Given/When/Then naming inside the existing test files gets the same readability and the same "this test describes a user behaviour, not an implementation detail" discipline, without a second file format or extra tooling to maintain. Worth revisiting if this project ever needs non-technical stakeholders to read/write scenarios independently of the test code - the actual use case Gherkin's separation is designed for, which doesn't apply here.
+
 ### No end-to-end (Playwright) tests for the initial build
 
 **Decision:** testing relies on Jest/React Testing Library unit and component tests, plus a deliberate manual verification pass (especially around the toggle failure path), not an automated E2E suite.
