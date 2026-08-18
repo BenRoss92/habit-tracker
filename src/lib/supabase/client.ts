@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/lib/database.types";
 
 // Shared browser client, created once and reused everywhere in the app.
 //
@@ -20,4 +21,4 @@ if (!url || !key) {
   throw new Error("Missing Supabase environment variables");
 }
 
-export const supabase = createClient(url, key);
+export const supabase = createClient<Database>(url, key);

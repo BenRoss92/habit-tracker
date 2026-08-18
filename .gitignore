@@ -41,6 +41,16 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Supabase CLI local state:
+# tracks which Supabase database your machine is 
+# currently linked to, e.g. production database 
+# or development database. This will differ 
+# per machine based on what each person in the 
+# team is using at a current point in time. 
+# Pushing this may break settings for another 
+# team member, so don't track these with Git.
+/supabase/.temp
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

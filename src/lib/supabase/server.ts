@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/lib/database.types";
 
 // Factory function returning a fresh Supabase client on every call, for use
 // inside Server Components and Server Actions.
@@ -25,7 +26,7 @@ export function createServerClient() {
     throw new Error("Missing Supabase environment variables for server-side client");
   }
 
-  return createClient(url, key, {
+  return createClient<Database>(url, key, {
     // Configures authentication behavior for this client
     auth: {
       // Disables storing auth session information
