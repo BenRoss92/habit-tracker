@@ -64,6 +64,38 @@ This document records the non-obvious architectural and product decisions behind
 
 **Why:** a fixed calendar week would show empty dots for future days early in the week (e.g. on a Monday, Tuesday–Sunday would all render as "empty"), with no way to visually distinguish the user not having completed any habits that day from that day not having occurred yet. Using a rolling window sidesteps that ambiguity entirely — every dot shown has already happened, with the current day being show on the far right, and the previous days that have already occurred with their results showing on the left. This also simplifies the UX as we no longer need a way in the UI to distinguish days that haven't occurred yet from days that have.
 
+## Visual design
+
+### Blue palette for day-dots and streak badges, not the originally-planned amber/green
+
+**Decision:** both the day-strip's completion dots and the habit streak badges use a single blue palette, scaled by intensity — `#dbeeff` (lightest) → `#5aaad4`/`#93c5e8` (mid) → `#1a6bbf`/`#1a55a0` (strongest, with white text) — rather than the amber (streak badges) and amber/green (day-dots) originally sketched out during planning. A 0-streak badge is a transparent pill with just a `#b8d4f0` border, not a filled grey.
+
+**Why:** this came out of iterating on the visual design directly (see `docs/design/habit-tracker.html`, and the "design iterated via Claude.ai chats" entry below) rather than the initial planning pass - a single-hue progression reads as more cohesive across the whole dashboard (day-strip, streak badges, borders, "today" ring all draw from the same blue family) than mixing in a second and third hue would have. The 🔥 emoji at streak-3 was kept from the original plan - it's still the "on a real roll" signal, just paired with the strongest blue instead of amber.
+
+### Day-dot fill is proportional, not three fixed states
+
+**Decision:** each day-strip dot fills like a pie chart, in proportion to the fraction of habits completed that day (e.g. 1 of 3 habits done fills roughly a third of the circle), rather than snapping to one of three fixed empty/half/full states as originally planned. A day where _all_ habits are done still gets the distinct full-circle-plus-⭐ treatment, so "perfect" days remain visually distinct from "just happens to be 100% today by coincidence of only having one habit."
+
+**Why:** a proportional fill scales correctly regardless of how many habits exist - three fixed states either compress meaningfully different completion levels together (2 of 5 vs 4 of 5 would both just be "half") or need more than three states to stay accurate as habit count grows. The plan's original three-state version was written before habits with varying counts were considered in this much depth.
+
+### Legend row under the day-strip
+
+**Decision:** a small legend renders directly beneath the day-strip, explaining what each dot state means: a filled circle with a star ("All habits completed"), a partial wedge ("Some habits completed"), an empty outline ("Nothing completed"), and a blue-ringed outline ("Today"). This is a new UI element not in the original component plan - part of `DayStrip`, not a separate component.
+
+**Why:** the proportional pie-fill (above) is expressive but not self-explanatory at a glance - a legend costs one small line of UI and removes any doubt about what a given dot's fill level or outline means, especially for the "today" ring, which could otherwise be mistaken for another fill state.
+
+### Nunito as the app's typeface
+
+**Decision:** the app adopts Nunito (Google Fonts, weights 400/500/600/700) as its typeface throughout, to be wired up via `next/font/google` when building UI, replacing whatever default Next.js currently ships with.
+
+**Why:** matches `docs/design/habit-tracker.html`, which commits to Nunito consistently. Using `next/font/google` (rather than the mockup's CDN `<link>`) keeps the font self-hosted and avoids a render-blocking external request, consistent with Next.js's own recommended approach.
+
+### "Any habits done" / "day streak" wording for the showing-up streak stat
+
+**Decision:** the showing-up streak's stat card reads **"Any habits done"** (label) → the streak count → **"day streak"** (subtitle), rather than the earlier "Daily Streak" / "days active" wording.
+
+**Why:** "Daily Streak" / "days active" doesn't tell a user whether the streak requires _all_ habits done that day or just _one_ - which matters a lot given the core metric was deliberately designed to reward showing up, not perfection (see above), not just a wording detail. Leading with "Any habits done" as the label states the actual rule explicitly, right where a user's eye lands first, without needing a tooltip or extra UI - the label and subtitle read as one sentence ("Any habits done: 6, day streak").
+
 ## Testing strategy
 
 ### Given/When/Then naming in plain Jest/RTL, not Gherkin/Cucumber
@@ -97,6 +129,12 @@ This document records the non-obvious architectural and product decisions behind
 **Decision:** alongside `/commit` and `/push-pr`, a third skill, `/review`, also sets `disable-model-invocation: true`. Unlike the other two, `/review` has no side effects on the repo or GitHub — it's a read-only, findings-only check — but it's still explicit-invocation-only, reserved for a deliberate, thorough pass: diffing the branch against `main`, cross-referencing `README.md`, this file, `CLAUDE.md`, and any relevant `~/.claude/plans/*.md` files for conflicts or staleness, sweeping for dead code, and independently re-running `pnpm test`/`tsc`/`lint` rather than trusting anything claimed earlier in conversation. Quick "am I on track" sanity checks mid-work happen through ordinary conversation instead, not through this skill.
 
 **Why:** even though `/review` doesn't push code or open PRs, keeping it explicit-invocation matches its intended cadence — a deliberate "give me the full picture" request before a commit or PR feels ready, not something that should fire on a casual comment like "I think this looks right." Keeping it findings-only (it never edits a file itself, even when it finds a stale doc or a real bug, and reports back for the developer to decide instead) keeps the same trust model as the rest of this toolkit: Claude reports, the developer decides.
+
+### Visual design iterated via Claude.ai chats, captured as a static reference file
+
+**Decision:** the app's visual design (colors, spacing, iconography, layout) was worked out iteratively in Claude.ai design conversations, not designed directly in code or logged decision-by-decision in this file. The final result is captured as a single static HTML/CSS mockup, `docs/design/habit-tracker.html`, checked into the repo and kept in sync as the design evolves (see `CLAUDE.md`'s Design section).
+
+**Why:** fine-grained visual choices (exact border widths, which of several blue variants to use where) don't carry the same lasting technical weight as the architectural and product decisions this file otherwise records, and logging each one individually here would dilute the more substantial entries a reviewer actually needs to understand this codebase. The handful of visual decisions that do have real product/UX weight - the color palette, the proportional day-dot fill, the streak-stat wording - are recorded above, under Visual design; everything else lives in the reference file itself, the same way `README.md`'s "AI tooling" line and the Context7/`/commit`/`/push-pr`/`/review` entries already disclose _how_ work got done, not just what shipped.
 
 ### Context7 MCP is configured at user scope, not project scope
 
