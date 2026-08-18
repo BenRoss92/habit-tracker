@@ -29,6 +29,12 @@ Use pnpm for all package management and script execution — this project does n
 - Tailwind CSS v4 is used for all styling; do not use inline `style` props or separate CSS files/modules except `src/app/globals.css` for the Tailwind import and theme tokens. Configured via the `@tailwindcss/postcss` PostCSS plugin (no `tailwind.config.js` — v4 uses CSS-based `@theme` config directly in `src/app/globals.css`).
 - `AGENTS.md` in the repo root is auto-generated and rewritten by `next dev` itself (Next.js 16 behavior, not a Claude Code artifact) — it will reappear even if deleted. It notes that this Next.js version has breaking changes vs. older training data and points to `node_modules/next/dist/docs/` for the current APIs/conventions before writing framework code.
 
+## Design
+
+Visual design reference: `docs/design/habit-tracker.html` — a static HTML/CSS mockup (not full-document; a `<style>` + markup fragment), generated externally and updated over time as the design evolves. Consult it before/when building or styling UI-facing features. It's a visual target only, not code to reuse directly — it predates this project's actual Tailwind v4 setup (`src/app/globals.css`'s CSS-based `@theme` config), so translate its colors/spacing/layout intent into this project's own Tailwind classes rather than copying its inline CSS wholesale.
+
+The app's typeface is Nunito (Google Fonts, weights 400/500/600/700), matching the design — wire it up via `next/font/google` when building UI, not the design file's CDN `<link>` (see `docs/decisions.md`).
+
 ## MCP servers
 
 The Context7 MCP server is configured at the user scope (`~/.claude/`) and not committed to this repo as it's a documentation lookup tool that can and should be used across any projects, not just for this project. Use it for current Next.js/React/Supabase/Tailwind API details instead of relying on training data (see the global rule at `~/.claude/rules/context7.md` for exactly when).
