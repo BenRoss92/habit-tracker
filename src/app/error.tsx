@@ -20,9 +20,14 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div>
-      <p>Something went wrong while loading your habits.</p>
-      <button onClick={() => retry()}>Try again</button>
+    <div className="bg-brand-subtle flex w-full max-w-xl flex-col items-start gap-4 rounded-2xl p-6">
+      <p className="text-heading">Something went wrong while loading your habits.</p>
+      <button
+        onClick={() => retry()}
+        className="border-brand text-brand cursor-pointer rounded-full border-2 bg-white px-5 py-2 text-sm font-bold"
+      >
+        Try again
+      </button>
     </div>
   );
 }

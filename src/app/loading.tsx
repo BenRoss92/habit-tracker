@@ -1,3 +1,3 @@
 export default function Loading() {
-  return <p>Loading habits...</p>;
+  return <p className="text-muted">Loading habits...</p>;
 }
