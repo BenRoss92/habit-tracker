@@ -14,8 +14,8 @@ import { Habit } from "@/lib/types";
 const fetchHabitsMock = jest.mocked(fetchHabits);
 
 describe("Home page", () => {
-  describe("when there are no habits", () => {
-    test("should show the message 'No habits added'", async () => {
+  describe("given there are no habits", () => {
+    it("then shows the message 'No habits added'", async () => {
       // Need to await the imported Page server component. Server components are async and return a
       // Promise, but React Testing Library's 'render' is synchronous. 'render' expects a
       // synchronous, standard React JSX element that it can immediately mount into the virtual DOM.
@@ -42,8 +42,8 @@ describe("Home page", () => {
     });
   });
 
-  describe("when there are habits", () => {
-    test("should show a list of habits", async () => {
+  describe("given there are habits", () => {
+    it("then shows a list of habits", async () => {
       const habits: Habit[] = [
         {
           created_at: "2026-08-17T11:06:09.855Z",
@@ -77,11 +77,13 @@ describe("Home page", () => {
     });
   });
 
-  describe("when fetching habits fails", () => {
-    test("should propagate the error instead of handling it", async () => {
-      // Home has no try/catch around fetchHabits, and there's no app/error.tsx boundary yet, so a
-      // failed fetch currently propagates all the way out rather than showing the user anything.
-      // This test documents that gap rather than approving of it — see app/error.tsx follow-up.
+  describe("given fetching habits fails", () => {
+    it("then propagates the error instead of handling it", async () => {
+      // Home has no try/catch around fetchHabits, so a failed fetch propagates all the way out of
+      // this Server Component - that's what makes it reachable by app/error.tsx's boundary in the
+      // real app. This test calls Page() directly, so it can't exercise Next's automatic file-
+      // convention wrapping; it only proves Home itself doesn't swallow the error, which is the
+      // precondition error.test.tsx assumes when testing the boundary in isolation.
       fetchHabitsMock.mockRejectedValueOnce(new Error("Failed to fetch habits"));
 
       await expect(Page()).rejects.toThrow("Failed to fetch habits");

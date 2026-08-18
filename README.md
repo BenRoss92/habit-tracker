@@ -24,7 +24,17 @@ Built using TDD, BDD, Vertical Slice Delivery and Claude Code.
 
 ### TDD and BDD
 
-Tests were written before implementation (TDD). Component tests were written in a BDD style - describing behaviour from the user's perspective rather than implementation details.
+Tests were written before implementation (TDD). Component tests were written in a BDD style - describing behaviour from the user's perspective rather than implementation details - using explicit Given/When/Then naming in nested `describe`/`it` blocks, e.g.:
+
+```ts
+describe("given an error occurred", () => {
+  describe("when the user clicks 'Try again'", () => {
+    it("then tries again", async () => { ... });
+  });
+});
+```
+
+This applies to component/UI tests, which describe end-user-observable behaviour. Data-layer tests (e.g. `fetchHabits()`'s success/failure contract) are plain descriptive unit tests instead, since their caller is other code, not an end user.
 
 ### Vertical Slice Delivery
 
