@@ -10,9 +10,5 @@ export default async function Home() {
   // server do server-side rendering. Fetch all of the habits from the database
   const habits = await fetchHabits();
 
-  return (
-    <div>
-      <HabitList habits={habits} />
-    </div>
-  );
+  return <HabitList habits={habits} />;
 }
