@@ -1,0 +1,34 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+      - name: Install PNPM
+        uses: pnpm/setup@v2
+        with:
+          # Install into the CI runner: the same major version of
+          # Node I'm using in my project locally and in production
+          runtime: node@24
+          cache: true
+      - name: Run linting and format check
+        run: pnpm run validate
+      - name: Run type checking
+        run: pnpm tsc --noEmit
+      - name: Run tests
+        run: pnpm test
+      - name: Run build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
