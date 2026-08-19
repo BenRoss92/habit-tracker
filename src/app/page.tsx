@@ -1,6 +1,10 @@
 import { HabitList } from "@/components/HabitList";
 import { fetchHabits } from "@/lib/data";
 
+// Always render fresh - never cache this page's HTML. See docs/decisions.md
+// "Data & backend" for why.
+export const revalidate = 0;
+
 export default async function Home() {
   // Learnt: A client component can't be async, e.g. it can't do an async database fetch.
   // Solution: Have a server component do the async database fetching,

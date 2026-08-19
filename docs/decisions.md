@@ -14,6 +14,14 @@ This document records the non-obvious architectural and product decisions behind
 
 ## Data & backend
 
+### `app/page.tsx` is force-dynamic (`revalidate = 0`), never statically cached
+
+**Decision:** `app/page.tsx` exports `revalidate = 0`, so the homepage's Supabase query reruns on every single request rather than being cached as static HTML.
+
+**Why:** without it, Next.js's App Router default applies - a Server Component with no dynamic APIs in use gets prerendered once at build time and served as static HTML from then on (confirmed via `pnpm build`'s route output: `○ (Static) prerendered as static content`). That surfaced as a real bug during manual production testing: a habit added directly via the Supabase dashboard didn't appear on the deployed site even after reloading, because the page was still serving the exact HTML generated at the last Vercel build - nothing had told Next.js to regenerate it.
+
+The eventual CRUD Server Actions will each call `revalidatePath('/')` after a successful mutation, which correctly busts a static page's cache for changes made _through the app_. But that only covers in-app mutations - any data change from outside the app (a manual Supabase dashboard edit, a script, a future admin tool) can never trigger `revalidatePath`, since that only runs from code paths inside this Next.js app. `revalidate = 0` is the only setting that stays correct regardless of how the data changed, which matters for an app whose entire dataset currently lives in one shared, directly-editable Supabase table. Given this is a low-traffic personal app, the cost of never caching the homepage is negligible, so this is expected to stay in place even once the CRUD Server Actions exist and their own `revalidatePath` calls would otherwise be enough on their own - not just a stopgap for the current no-CRUD-yet state. Worth revisiting only if this app ever saw enough real traffic for a per-request Supabase round-trip to become a genuine latency/cost concern.
+
 ### Hard delete, not soft delete
 
 **Decision:** deleting a habit permanently removes it and all its completions (`ON DELETE CASCADE`). There's no archive/trash state or recovery path.
