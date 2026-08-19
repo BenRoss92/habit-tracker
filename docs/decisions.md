@@ -124,6 +124,12 @@ This document records the non-obvious architectural and product decisions behind
 
 ## Continuous integration
 
+### CI added before every vertical slice is finished, not after
+
+**Decision:** `.github/workflows/ci.yml` was built and shipped while the app still only has one working slice (viewing habits) - habit creation/editing/deletion and streaks (README.md's "Development approach") don't exist yet.
+
+**Why:** this is deliberate, not drift. The goal is to get one full vertical slice - UI through to the database - working in production as early as possible, both because that's the point of vertical slice delivery and Agile (deliver something a real user could get value from as soon as possible, not wait for every feature to land at once) and because a single slice running for real in production is what actually surfaces infrastructure risk: deployment config, environment variables, build failures, version mismatches between local and CI (see the pnpm version entry below for a real example this caught). Finding and fixing that class of problem now, while the codebase is still small and there's only one slice to debug, is far cheaper than finding it later once several features are built on top of an infrastructure layer that was never actually exercised. Once CI is in place, every feature slice built after this one gets its checks enforced automatically from the moment it's written, rather than CI being retrofitted after a backlog of untested features already exists.
+
 ### Node version pinned in three separate places - `.nvmrc`, `engines.node`, and the CI workflow's `runtime` input
 
 **Decision:** the Node.js major version (24) is pinned in three different files rather than one: `.nvmrc` at the repo root, `engines.node` in `package.json`, and the `runtime: node@24` input on the `pnpm/setup@v2` step in `.github/workflows/ci.yml`. All three are kept at major-version-only granularity (`24`, `24.x`, `node@24`), not an exact patch like `24.18.0`.
@@ -135,6 +141,26 @@ This document records the non-obvious architectural and product decisions behind
 - `runtime: node@24` is the one entry of the three that actually provisions Node: it's what tells `pnpm/setup@v2` to download and install that Node version onto the GitHub Actions runner and put it on `PATH` for every later step (lint, `tsc`, `jest`, `pnpm build`). Without it, `pnpm/setup@v2` would still install pnpm fine (pnpm v11+ ships as a self-contained binary needing no Node), but the job would run on whatever Node the `ubuntu-latest` runner image happens to ship that week - a version nobody chose, that drifts whenever GitHub updates the image, and that pnpm's own `engines.node` check would only ever catch after the fact rather than correct.
 
 Major-version-only (rather than pinning the exact patch, e.g. `24.18.0`) was chosen so all three keep receiving Node's own patch/security updates automatically. A full major bump (e.g. 24 → 26) still requires deliberately editing all three files together, which is the point - it stops local dev, CI, and the Vercel production build from silently drifting apart on which Node version is actually running the app, since before this none of the three had any pinned Node version recorded anywhere at all.
+
+### pnpm pinned to 11.22.0, not the original 11.13.0
+
+**Decision:** `packageManager` in `package.json` is `pnpm@11.22.0` (with its full integrity hash), not the `11.13.0` the project started on.
+
+**Why:** the first real CI run on this workflow failed - pnpm 11.13.0 turned out not to be compatible with Node 24 in the GitHub Actions environment. `pnpm/setup@v2` reads the pnpm version to install directly from this `packageManager` field (there's no separate pnpm-version input in `ci.yml` to keep in sync), so bumping this one field is what actually fixes CI - no workflow file change was needed alongside it. The version was updated locally first via `corepack use pnpm@11.22.0`, which is also what regenerated the integrity hash now recorded here.
+
+### CI workflow tested locally with `act` before pushing
+
+**Decision:** `.github/workflows/ci.yml` is run locally, via the `act` CLI (installed with Homebrew, backed by Docker), before pushing a change to it - rather than pushing straight to a PR and iterating on real GitHub Actions runs.
+
+**Why:** a workflow file has no equivalent of `tsc --noEmit` - the only way to know whether the YAML is well-formed and each step actually does what's intended is to run it. Iterating via real pushes means round-tripping through a commit, a push, and a wait for the Actions runner for every small fix, and burns real Actions minutes on runs that are only there to catch a typo. `act` simulates the same trigger (`act pull_request`) in a local Docker container, giving the same fast local feedback loop already used for the rest of this project (`pnpm lint`/`tsc`/`test` before committing) rather than treating the CI config itself as the one thing that only gets tested in production.
+
+No separate secrets/vars file is needed to run it: the build step reads `vars.NEXT_PUBLIC_SUPABASE_URL`/`vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (see the CI hardening entry below for why these are `vars`, not `secrets`), and `act` accepts any dotenv-format file as its variables source via `--var-file` - so the existing `.env.local` (already used for `pnpm dev`) is reused directly: `act pull_request --var-file .env.local`. This is also why `.gitignore` has no `.secrets` entry: this project's workflow has no `secrets.*` reference at all right now, so there's nothing for a `.secrets` file to hold - only `.env.local`, which the existing `.env*` pattern already covers.
+
+### CI hardening: repository `vars` (not `secrets`) for public build values, least-privilege permissions, cancel-in-progress, a timeout
+
+**Decision:** `ci.yml`'s build step reads `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from `vars.*` (repository variables), not `secrets.*`. The workflow also declares `permissions: contents: read` at the top level, a `concurrency` group that cancels a superseded run when a new commit lands on the same PR, and `timeout-minutes: 10` on the job.
+
+**Why:** `NEXT_PUBLIC_`-prefixed values are inlined into the client-side JS bundle by Next.js itself, so they're already visible to every visitor regardless of how they're stored in CI - a Supabase publishable key plays the same public-by-design role the old "anon key" did. Storing values that are meant to be public as GitHub _secrets_ masks them in logs for no real reason and misrepresents their sensitivity to anyone reading this file later; repository _variables_ are the correct place for them, keeping `secrets` reserved for something that would actually be a problem if leaked (e.g. a future Supabase service-role key). The other three settings follow GitHub's own security-hardening guidance for a workflow that never needs to push, comment, or write anything: `permissions: contents: read` limits the `GITHUB_TOKEN` to the minimum this job actually uses instead of inheriting whatever the repo/org default happens to be; `concurrency` avoids paying for two runs when a second push arrives before the first run on the same PR finishes; and `timeout-minutes: 10` stops a hang from silently consuming Actions quota, given GitHub's own default job timeout is 360 minutes.
 
 ### `/commit` and `/push-pr` skills require explicit invocation - not implicitly invoked by Claude
 
