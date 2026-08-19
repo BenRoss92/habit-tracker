@@ -8,7 +8,7 @@ A habit tracking web app for building and maintaining daily habits, tracking str
 
 Development approach (from README.md): built using TDD (tests written before implementation) and BDD-style component tests (describing behavior from the user's perspective, not implementation details), delivered as vertical slices — each feature cut through the full stack (UI → business logic → database) so it's immediately usable, rather than built layer-by-layer.
 
-**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. No habit creation/editing/deletion, streaks, or CI setup exists yet.
+**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. No habit creation/editing/deletion or streaks exist yet.
 
 ## Commands
 
@@ -38,3 +38,7 @@ The app's typeface is Nunito (Google Fonts, weights 400/500/600/700), matching t
 ## MCP servers
 
 The Context7 MCP server is configured at the user scope (`~/.claude/`) and not committed to this repo as it's a documentation lookup tool that can and should be used across any projects, not just for this project. Use it for current Next.js/React/Supabase/Tailwind API details instead of relying on training data (see the global rule at `~/.claude/rules/context7.md` for exactly when).
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs lint + format check, `tsc --noEmit`, `jest`, and a full `pnpm build` on every pull request into `main`. It can be run locally, before pushing, with the `act` CLI (installed via Homebrew) — `act pull_request --var-file .env.local` to simulate the trigger that opens a PR, with the build step's `vars.NEXT_PUBLIC_SUPABASE_URL`/`vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` populated from the same `.env.local` already used for `pnpm dev` (act reads `--var-file` in plain dotenv format, so no separate file is needed). See `docs/decisions.md`'s "Continuous integration" section for why the workflow and the Node-version pinning around it are set up the way they are.
