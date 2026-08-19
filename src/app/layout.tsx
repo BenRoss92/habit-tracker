@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "A habit tracking app for building and maintaining daily habits.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${nunito.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
