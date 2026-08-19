@@ -90,6 +90,12 @@ This document records the non-obvious architectural and product decisions behind
 
 **Why:** matches `docs/design/habit-tracker.html`, which commits to Nunito consistently. Using `next/font/google` (rather than the mockup's CDN `<link>`) keeps the font self-hosted and avoids a render-blocking external request, consistent with Next.js's own recommended approach.
 
+### No dark mode; unused `@theme` tokens removed
+
+**Decision:** the Next.js scaffold's dark-mode media query and the `--color-background`/`--color-foreground`/`--font-mono` theme tokens it enabled are dropped, along with the unused Geist Mono font. `--background`/`--foreground` stay as plain `:root` variables consumed directly by `body`, not exposed as Tailwind color tokens.
+
+**Why:** `docs/design/habit-tracker.html` only specifies a light appearance, and nothing in the app used `bg-background`, `text-foreground`, or `font-mono` - keeping them was unused surface area left over from scaffolding, not an intentional feature.
+
 ### "Any habits done" / "day streak" wording for the showing-up streak stat
 
 **Decision:** the showing-up streak's stat card reads **"Any habits done"** (label) → the streak count → **"day streak"** (subtitle), rather than the earlier "Daily Streak" / "days active" wording.

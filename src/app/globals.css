@@ -1,15 +1,20 @@
 @import "tailwindcss";
 
+/* Every page should default to having a white background colour and black text,
+  as my design is only styling certain elements on the page (not all elements), 
+  and we want to avoid the user's browser applying different default colours to 
+  each page if their browser uses different default colours.
+  */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* Create Tailwind theme variables (design tokens). 
+Tailwind generates multiple utility classes for each of variable. 
+  These can then be referenced in components */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-nunito);
-  --font-mono: var(--font-geist-mono);
 
   /* Habit tracker palette - see docs/decisions.md "Visual design" and docs/design/habit-tracker.html */
   --color-brand: #1a6bbf;
