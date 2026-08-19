@@ -122,7 +122,19 @@ This document records the non-obvious architectural and product decisions behind
 
 **Why:** the original reasoning against a first-load skeleton still holds on its own: the dataset is small by design — likely a small number of habits and potentially in the low hundreds of completion rows per a year — so the server fetch is near-instant, and a skeleton for that case alone would add complexity without much visible benefit. But once `error.tsx`'s retry button existed, a real gap opened: clicking "Try again" left the user staring at the same error message with no feedback that a request was actually in flight, which would be especially confusing if the retry failed and showed the identical error screen again. `loading.tsx` closes that gap for free via the App Router's file convention — no extra wiring needed beyond the file existing — so keeping it was preferred over building retry-specific loading feedback some other way.
 
-## Development workflow tooling
+## Continuous integration
+
+### Node version pinned in three separate places - `.nvmrc`, `engines.node`, and the CI workflow's `runtime` input
+
+**Decision:** the Node.js major version (24) is pinned in three different files rather than one: `.nvmrc` at the repo root, `engines.node` in `package.json`, and the `runtime: node@24` input on the `pnpm/setup@v2` step in `.github/workflows/ci.yml`. All three are kept at major-version-only granularity (`24`, `24.x`, `node@24`), not an exact patch like `24.18.0`.
+
+**Why:** each one is read by a different tool, for a different purpose, and no single file is read by all three - so one file wasn't an option:
+
+- `.nvmrc` is read only by `nvm`, and only locally, when running `nvm use` with no argument (or via an opt-in shell hook, not yet configured, that would auto-switch on `cd`). It has no effect on pnpm, CI, or Vercel.
+- `engines.node` is read by pnpm on every `pnpm install`/`pnpm <script>` (a hard error, not just a warning, if the currently-active Node doesn't satisfy it, since this is the project's own `engines` field rather than a dependency's) and by Vercel at deploy time to pick the actual Node major version production builds and serverless functions run on, overriding whatever's set in the Vercel dashboard's Project Settings. Neither of these actually installs a matching Node - they only check or select among what's already available.
+- `runtime: node@24` is the one entry of the three that actually provisions Node: it's what tells `pnpm/setup@v2` to download and install that Node version onto the GitHub Actions runner and put it on `PATH` for every later step (lint, `tsc`, `jest`, `pnpm build`). Without it, `pnpm/setup@v2` would still install pnpm fine (pnpm v11+ ships as a self-contained binary needing no Node), but the job would run on whatever Node the `ubuntu-latest` runner image happens to ship that week - a version nobody chose, that drifts whenever GitHub updates the image, and that pnpm's own `engines.node` check would only ever catch after the fact rather than correct.
+
+Major-version-only (rather than pinning the exact patch, e.g. `24.18.0`) was chosen so all three keep receiving Node's own patch/security updates automatically. A full major bump (e.g. 24 → 26) still requires deliberately editing all three files together, which is the point - it stops local dev, CI, and the Vercel production build from silently drifting apart on which Node version is actually running the app, since before this none of the three had any pinned Node version recorded anywhere at all.
 
 ### `/commit` and `/push-pr` skills require explicit invocation - not implicitly invoked by Claude
 
