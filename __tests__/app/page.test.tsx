@@ -7,6 +7,12 @@ jest.mock("@/lib/data", () => ({
   fetchHabits: jest.fn(),
 }));
 
+// Also mock the server action for creating a habit so importing `Habits`/`Page` doesn't load
+// Next server code that expects Node web globals like `Request`.
+jest.mock("@/app/actions", () => ({
+  createHabit: jest.fn().mockResolvedValue(undefined),
+}));
+
 import Page from "@/app/page";
 import { fetchHabits } from "@/lib/data";
 import { Habit } from "@/lib/types";
@@ -23,6 +29,11 @@ describe("Home page", () => {
       // component into a test DOM so that the test can see and interact with it.
       fetchHabitsMock.mockResolvedValueOnce([]);
 
+      // Need to await the imported Page server component. Server components are async and return a
+      // Promise, but React Testing Library's 'render' is synchronous. 'render' expects a
+      // synchronous, standard React JSX element that it can immediately mount into the virtual DOM.
+      // render - mounts React components into a test DOM (jsdom). Loads and displays the Page
+      // component into a test DOM so that the test can see and interact with it.
       const page = await Page();
       render(page);
 
@@ -39,6 +50,17 @@ describe("Home page", () => {
       const habitList = screen.queryByRole("list");
 
       expect(habitList).not.toBeInTheDocument();
+    });
+  });
+
+  describe("given the page has loaded", () => {
+    it("then also shows the add-habit button", async () => {
+      fetchHabitsMock.mockResolvedValueOnce([]);
+
+      const page = await Page();
+      render(page);
+
+      expect(screen.getByText("Add habit")).toBeInTheDocument();
     });
   });
 

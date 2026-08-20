@@ -8,7 +8,7 @@ A habit tracking web app for building and maintaining daily habits, tracking str
 
 Development approach (from README.md): built using TDD (tests written before implementation) and BDD-style component tests (describing behavior from the user's perspective, not implementation details), delivered as vertical slices — each feature cut through the full stack (UI → business logic → database) so it's immediately usable, rather than built layer-by-layer.
 
-**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. No habit creation/editing/deletion or streaks exist yet.
+**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. Habit creation exists (`AddHabitForm` + the `createHabit` Server Action), currently unstyled. Habit editing/deletion and streaks don't exist yet.
 
 ## Commands
 

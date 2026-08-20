@@ -1,5 +1,6 @@
 import { HabitList } from "@/components/HabitList";
 import { fetchHabits } from "@/lib/data";
+import { AddHabitForm } from "@/components/AddHabitForm";
 
 // Always render fresh - never cache this page's HTML. See docs/decisions.md
 // "Data & backend" for why.
@@ -14,5 +15,10 @@ export default async function Home() {
   // server do server-side rendering. Fetch all of the habits from the database
   const habits = await fetchHabits();
 
-  return <HabitList habits={habits} />;
+  return (
+    <div>
+      <AddHabitForm />
+      <HabitList habits={habits} />
+    </div>
+  );
 }
