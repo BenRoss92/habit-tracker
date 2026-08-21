@@ -32,7 +32,7 @@ const addHabitForm = tv({
         form: "border-brand bg-white opacity-60",
         input: "border-line bg-input-bg-disabled text-input-text-disabled",
         submitButton: "bg-line cursor-not-allowed",
-        cancelButton: "border-error-muted text-line cursor-not-allowed",
+        cancelButton: "border-line text-line cursor-not-allowed",
       },
     },
   },
@@ -60,10 +60,16 @@ export function AddHabitForm({
     formState = "error";
   }
 
-  const { form, input, submitButton } = addHabitForm({ state: formState });
+  const { form, input, submitButton, cancelButton } = addHabitForm({ state: formState });
 
   function updateHabitName(e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>): void {
     setHabitName(e.target.value);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setError(undefined);
+    setHabitName("");
   }
 
   async function submitHabitName(event: React.SubmitEvent<HTMLFormElement>) {
@@ -90,14 +96,6 @@ export function AddHabitForm({
     setError(undefined);
     setIsPending(false);
   }
-
-  // Add a form, so that when a user hits enter when typing into the submit button, the
-  // form will automatically submit, vs using an onClick handler on a button element which
-  // wouldn't do this. Use onSubmit instead of the action attribute - we don't need to
-  // send multiple data in a FormData object to the server action - we just need to send a
-  // string to the server action. So not using the action attribute and not using
-  // useActionState simplifies the solution as we don't need to send a FormData object to
-  // the server action - we just send a string instead.
 
   return (
     isEditing && (
@@ -133,15 +131,25 @@ export function AddHabitForm({
             {error}
           </p>
         )}
-        <button
-          type="submit"
-          aria-disabled={isPending}
-          disabled={isPending}
-          className={submitButton()}
-        >
-          {isPending && <IconLoader2 size={14} className="animate-spin" />}
-          <span>{isPending ? "Adding..." : "Add"}</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            aria-disabled={isPending}
+            disabled={isPending}
+            className={submitButton()}
+          >
+            {isPending && <IconLoader2 size={14} className="animate-spin" />}
+            <span>{isPending ? "Adding..." : "Add"}</span>
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            className={cancelButton()}
+            onClick={() => cancelEdit()}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     )
   );
