@@ -93,6 +93,13 @@ describe("Home page", () => {
 
       expect(habitList).toBeInTheDocument();
 
+      // Confirm the actual fetched habits made it through the whole chain (Page ->
+      // HabitsSection -> HabitList), not just that some <ul> happens to exist - a
+      // completely broken data pass-through would still satisfy getByRole("list") alone.
+      expect(screen.getByText("Meditate")).toBeInTheDocument();
+      expect(screen.getByText("Wash clothes")).toBeInTheDocument();
+      expect(screen.getByText("Read")).toBeInTheDocument();
+
       const notice = screen.queryByText("No habits added");
 
       expect(notice).not.toBeInTheDocument();

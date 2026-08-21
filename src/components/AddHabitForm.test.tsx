@@ -206,4 +206,66 @@ describe("AddHabitForm component", () => {
     if (!resolveRetry) throw new Error("resolver not ready");
     resolveRetry({});
   });
+
+  test("cancelling tells the parent to close the form, and clears the input and any error", async () => {
+    mockedCreateHabit.mockResolvedValue({ message: "Database error: Failed to save habit" });
+
+    const user = userEvent.setup();
+
+    const { rerender } = render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+
+    // Get the form into a non-trivial state first - typed text and a visible error -
+    // so cancelling has something real to clear, not just an already-empty form.
+    await user.type(screen.getByLabelText("Habit name"), "Meditate");
+    await user.click(screen.getByText("Add"));
+    await screen.findByText("Database error: Failed to save habit");
+
+    await user.click(screen.getByText("Cancel"));
+
+    expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+
+    // Simulate the parent reacting to setIsEditing(false), then the user reopening the
+    // form via AddHabitButton elsewhere - confirms neither the typed name nor the error
+    // lingered in AddHabitForm's own state after cancelling.
+    rerender(<AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />);
+    rerender(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+
+    expect(screen.getByLabelText("Habit name")).toHaveValue("");
+    expect(screen.queryByText("Database error: Failed to save habit")).not.toBeInTheDocument();
+  });
+
+  test("Cancel is disabled and has no effect while a submission is pending", async () => {
+    // Same manually-resolvable-promise pattern as the other pending-state tests above, so the
+    // mid-flight state can actually be inspected rather than raced against.
+    let resolveCreateHabit: ((result: { message?: string }) => void) | undefined;
+    const pendingResult = new Promise<{ message?: string }>((resolve) => {
+      resolveCreateHabit = resolve;
+    });
+    mockedCreateHabit.mockReturnValue(pendingResult);
+
+    const user = userEvent.setup();
+
+    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+
+    await user.type(screen.getByLabelText("Habit name"), "Meditate");
+    await user.click(screen.getByText("Add"));
+
+    const cancelButton = await screen.findByRole("button", { name: /cancel/i });
+    expect(cancelButton).toBeDisabled();
+
+    // userEvent (unlike fireEvent) respects the disabled attribute and won't fire the click
+    // handler - asserting on the actual consequence, not just the attribute, is what would
+    // have caught the real bug this guards against: Cancel closing the form (and the
+    // in-flight request still completing and adding the habit) even though the button
+    // looked disabled.
+    await user.click(cancelButton);
+    expect(mockSetIsEditing).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Habit name")).toHaveValue("Meditate");
+
+    if (!resolveCreateHabit) throw new Error("resolver not ready");
+    resolveCreateHabit({});
+    await waitFor(() => {
+      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+    });
+  });
 });
