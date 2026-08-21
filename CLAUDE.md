@@ -31,9 +31,15 @@ Use pnpm for all package management and script execution — this project does n
 
 ## Design
 
-Visual design reference: `docs/design/habit-tracker.html` — a static HTML/CSS mockup (not full-document; a `<style>` + markup fragment), generated externally and updated over time as the design evolves. Consult it before/when building or styling UI-facing features. It's a visual target only, not code to reuse directly — it predates this project's actual Tailwind v4 setup (`src/app/globals.css`'s CSS-based `@theme` config), so translate its colors/spacing/layout intent into this project's own Tailwind classes rather than copying its inline CSS wholesale.
+Visual design reference: `docs/design/`, generated externally and kept in sync over time as the design evolves. Consult these before/when building or styling UI-facing features:
 
-The app's typeface is Nunito (Google Fonts, weights 400/500/600/700), matching the design — wire it up via `next/font/google` when building UI, not the design file's CDN `<link>` (see `docs/decisions.md`).
+- `design.md` — a structured written spec (colour palette, typography, layout measurements, and per-state property tables) covering the whole app. Usually the fastest place to look up a specific value.
+- `habit-tracker-main.html` — a static HTML/CSS mockup of the main dashboard: header, day strip, habit cards, stats row. A full standalone `<!DOCTYPE html>` document, safe to open directly in a browser.
+- `add-habit-form-states.html` — a static HTML/CSS mockup of the add-habit form's three states: idle, validation error, submission pending. Also a full standalone document.
+
+None of these are code to reuse directly — they're visual targets only, and the two HTML mockups predate this project's actual Tailwind v4 setup (`src/app/globals.css`'s CSS-based `@theme` config), so translate their colors/spacing/layout intent into this project's own Tailwind classes rather than copying inline CSS wholesale. Both mockups load Nunito and the Tabler Icons webfont from a CDN so they render correctly when opened standalone (see `docs/decisions.md`) — the app itself doesn't link to either CDN, so don't carry that pattern into real code: self-host Nunito via `next/font/google` (below) and copy any icon in as an inline SVG (as already done for the add-habit button's plus icon), not a webfont link.
+
+The app's typeface is Nunito (Google Fonts, weights 400/500/600/700), matching the design — wire it up via `next/font/google` when building UI, not the mockups' CDN `<link>` (see `docs/decisions.md`).
 
 ## MCP servers
 
