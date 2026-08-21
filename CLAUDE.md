@@ -8,7 +8,7 @@ A habit tracking web app for building and maintaining daily habits, tracking str
 
 Development approach (from README.md): built using TDD (tests written before implementation) and BDD-style component tests (describing behavior from the user's perspective, not implementation details), delivered as vertical slices — each feature cut through the full stack (UI → business logic → database) so it's immediately usable, rather than built layer-by-layer.
 
-**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches and displays habits from Supabase via `HabitList`, with `error.tsx`/`loading.tsx` boundaries. Habit creation exists (`AddHabitForm` + the `createHabit` Server Action), currently unstyled. Habit editing/deletion and streaks don't exist yet.
+**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches habits and renders `HabitsSection` (the stateful orchestrating component - `AddHabitButton`, `AddHabitForm`, `HabitList`), with `error.tsx`/`loading.tsx` boundaries. Habit creation exists and is styled to match the design (`AddHabitForm` via `tailwind-variants`). Habit editing/deletion and streaks don't exist yet.
 
 ## Commands
 
@@ -37,7 +37,7 @@ Visual design reference: `docs/design/`, generated externally and kept in sync o
 - `habit-tracker-main.html` — a static HTML/CSS mockup of the main dashboard: header, day strip, habit cards, stats row. A full standalone `<!DOCTYPE html>` document, safe to open directly in a browser.
 - `add-habit-form-states.html` — a static HTML/CSS mockup of the add-habit form's three states: idle, validation error, submission pending. Also a full standalone document.
 
-None of these are code to reuse directly — they're visual targets only, and the two HTML mockups predate this project's actual Tailwind v4 setup (`src/app/globals.css`'s CSS-based `@theme` config), so translate their colors/spacing/layout intent into this project's own Tailwind classes rather than copying inline CSS wholesale. Both mockups load Nunito and the Tabler Icons webfont from a CDN so they render correctly when opened standalone (see `docs/decisions.md`) — the app itself doesn't link to either CDN, so don't carry that pattern into real code: self-host Nunito via `next/font/google` (below) and copy any icon in as an inline SVG (as already done for the add-habit button's plus icon), not a webfont link.
+None of these are code to reuse directly — they're visual targets only, and the two HTML mockups predate this project's actual Tailwind v4 setup (`src/app/globals.css`'s CSS-based `@theme` config), so translate their colors/spacing/layout intent into this project's own Tailwind classes rather than copying inline CSS wholesale. Both mockups load Nunito and the Tabler Icons webfont from a CDN so they render correctly when opened standalone (see `docs/decisions.md`) — the app itself doesn't link to either CDN, so don't carry that pattern into real code: self-host Nunito via `next/font/google` (below), and use `@tabler/icons-react` components (e.g. `IconPlus`, `IconLoader2`) for icons, not the webfont link or hand-copied inline SVG.
 
 The app's typeface is Nunito (Google Fonts, weights 400/500/600/700), matching the design — wire it up via `next/font/google` when building UI, not the mockups' CDN `<link>` (see `docs/decisions.md`).
 

@@ -22,6 +22,10 @@ Tailwind generates multiple utility classes for each of variable.
   --color-line: #b8d4f0;
   --color-heading: #1a3a5c;
   --color-muted: #4a7ab5;
+  --color-error: #d93025;
+  --color-error-muted: #fff8f8;
+  --color-input-text-disabled: #b8d4f0;
+  --color-input-bg-disabled: #f0f4f8;
 }
 
 body {

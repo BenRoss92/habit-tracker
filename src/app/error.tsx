@@ -20,7 +20,7 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="bg-brand-subtle flex w-full max-w-xl flex-col items-start gap-4 rounded-2xl p-6">
+    <div className="flex w-full max-w-xl flex-col items-start gap-4 rounded-2xl p-6">
       <p className="text-heading">Something went wrong while loading your habits.</p>
       <button
         onClick={() => retry()}

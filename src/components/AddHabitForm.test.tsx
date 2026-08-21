@@ -15,18 +15,24 @@ import { createHabit } from "@/app/actions";
 const mockedCreateHabit = jest.mocked(createHabit);
 
 describe("AddHabitForm component", () => {
+  const mockSetIsEditing = jest.fn();
+
   beforeEach(() => {
     mockedCreateHabit.mockReset();
+    mockSetIsEditing.mockReset();
   });
 
-  test("shows the Add habit button when not editing", () => {
-    mockedCreateHabit.mockResolvedValue({});
-    render(<AddHabitForm />);
+  test("renders nothing when not editing", () => {
+    const { container } = render(
+      <AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />,
+    );
 
-    expect(screen.getByText("Add habit")).toBeInTheDocument();
+    // AddHabitForm no longer owns its own "Add habit" trigger button - that's
+    // AddHabitButton's job now, controlled externally via the isEditing prop.
+    expect(container).toBeEmptyDOMElement();
   });
 
-  test("shows an error when one occurred, keeps form open and preserves typed value", async () => {
+  test("shows an error when one occurred, keeps the form open and preserves the typed value", async () => {
     // Return the plain error object (not a Promise) so the mock resolves to the
     // expected payload. Passing a Promise into `mockResolvedValue` produces a
     // Promise-of-Promise and you'll end up getting a Promise where you expect
@@ -35,55 +41,47 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm />);
-
-    // Open the edit form, enter a habit name and submit to trigger the server action.
-    const addButton = screen.getByText("Add habit");
-    await user.click(addButton);
+    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
 
     const inputField = screen.getByLabelText("Habit name");
     await user.type(inputField, "Meditate");
 
-    const submitButton = screen.getByText("Submit");
+    const submitButton = screen.getByText("Add");
     await user.click(submitButton);
 
-    // form stays open
-    await waitFor(() => {
-      expect(submitButton).toBeInTheDocument();
-      expect(inputField).toBeInTheDocument();
-      // typed value is preserved
-      expect(inputField).toHaveValue("Meditate");
-
-      // Add button is not visible as still in editing mode when there is an error.
-      // It may already be removed immediately after opening the form, so use
-      // `waitFor` with a role-based query which works whether the node was
-      // removed synchronously or asynchronously.
-      expect(screen.queryByRole("button", { name: /add habit/i })).not.toBeInTheDocument();
-    });
-
     // `findByText` returns a Promise, so need to await it before asserting.
-    const errorText = await screen.findByText("Error: Database error: Failed to save habit");
+    const errorText = await screen.findByText("Database error: Failed to save habit");
     expect(errorText).toBeInTheDocument();
+
+    // typed value is preserved
+    expect(inputField).toHaveValue("Meditate");
+
+    // Closing the form is the parent's job (via setIsEditing) - on failure, AddHabitForm
+    // never calls it, so the parent has no reason to stop rendering the form as open.
+    expect(mockSetIsEditing).not.toHaveBeenCalled();
   });
 
-  test("closes the form and clears the input after a successful submission", async () => {
+  test("tells the parent to close the form after a successful submission, and clears the input", async () => {
     mockedCreateHabit.mockResolvedValue({});
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm />);
+    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
 
-    await user.click(screen.getByText("Add habit"));
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
-    await user.click(screen.getByText("Submit"));
+    await user.click(screen.getByText("Add"));
 
-    // Success resets back to the initial "not editing" view - the form (and its label/input)
-    // is replaced by the Add habit button again.
+    // AddHabitForm doesn't own whether it's shown - it just tells the parent
+    // (via setIsEditing) that submission succeeded, and the parent decides to stop
+    // rendering it as open. Assert both the mock call and the settled input value
+    // together, so waitFor keeps polling until every state update from the success
+    // path (not just the first one) has actually committed - checking only the mock
+    // call lets waitFor resolve before React finishes flushing the rest, which is what
+    // was producing "not wrapped in act(...)" warnings.
     await waitFor(() => {
-      expect(screen.getByText("Add habit")).toBeInTheDocument();
+      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
-
-    expect(screen.queryByLabelText("Habit name")).not.toBeInTheDocument();
   });
 
   test("does not carry over the previous habit name when reopened after a successful submission", async () => {
@@ -91,23 +89,25 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm />);
+    const { rerender } = render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
 
-    await user.click(screen.getByText("Add habit"));
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
-    await user.click(screen.getByText("Submit"));
+    await user.click(screen.getByText("Add"));
 
     await waitFor(() => {
-      expect(screen.getByText("Add habit")).toBeInTheDocument();
+      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
 
-    // Reopen the form and confirm the input used to type the previous habit name clears
-    // that value
-    await user.click(screen.getByText("Add habit"));
+    // Simulate the parent reacting to setIsEditing(false), then the user reopening the
+    // form via AddHabitButton elsewhere - isEditing goes false, then true again.
+    rerender(<AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />);
+    rerender(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+
     expect(screen.getByLabelText("Habit name")).toHaveValue("");
   });
 
-  test("shows 'Adding...' and disables the submit button while the request is pending", async () => {
+  test("shows 'Adding...' and disables the submit button and input while the request is pending", async () => {
     // Use a manually-resolvable promise instead of mockResolvedValue so the pending state can be
     // asserted before the request "completes".
     // Create a function that we will replace the 'resolve' function inside of the Promise with, so
@@ -132,19 +132,21 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm />);
+    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
 
-    await user.click(screen.getByText("Add habit"));
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
-    await user.click(screen.getByText("Submit"));
+    await user.click(screen.getByText("Add"));
 
-    const pendingButton = await screen.findByText("Adding...");
+    // Query by role rather than the "Adding..." text directly - that text sits inside a
+    // <span> (next to the spinner icon), and a <span> can never be "disabled" in the DOM
+    // sense. Querying by role resolves to the actual <button>, whose accessible name
+    // already includes the span's text.
+    const pendingButton = await screen.findByRole("button", { name: /adding/i });
     expect(pendingButton).toBeInTheDocument();
     expect(pendingButton).toBeDisabled();
-    expect(screen.queryByText("Submit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Add")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Habit name")).toBeInTheDocument();
     expect(screen.getByLabelText("Habit name")).toBeDisabled();
-    expect(screen.queryByText("Add habit")).not.toBeInTheDocument();
 
     // Fail the test if we've accidentally not assigned the custom resolve
     // function to anything before trying to use it - e.g. if we've moved lines around in the test
@@ -167,10 +169,8 @@ describe("AddHabitForm component", () => {
     // was not wrapped in act(...). So don't explicitly await the promise to resolve - it's not
     // needed.
     await waitFor(() => {
-      expect(screen.getByText("Add habit")).toBeInTheDocument();
-      expect(screen.queryByText("Submit")).not.toBeInTheDocument();
-      expect(screen.queryByText("Adding...")).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("Habit name")).not.toBeInTheDocument();
+      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
   });
 
@@ -180,13 +180,12 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm />);
+    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
 
-    await user.click(screen.getByText("Add habit"));
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
-    await user.click(screen.getByText("Submit"));
+    await user.click(screen.getByText("Add"));
 
-    await screen.findByText("Error: Database error: Failed to save habit");
+    await screen.findByText("Database error: Failed to save habit");
 
     // Retry: use a manually-resolvable promise (same pattern as the pending-state test above) so
     // the mid-retry state - after resubmitting, before the new result comes back - can be
@@ -197,13 +196,11 @@ describe("AddHabitForm component", () => {
     });
     mockedCreateHabit.mockReturnValueOnce(retryResult);
 
-    await user.click(screen.getByText("Submit"));
+    await user.click(screen.getByText("Add"));
 
     // The old error should be gone the moment the retry starts, not just once it resolves.
     await waitFor(() => {
-      expect(
-        screen.queryByText("Error: Database error: Failed to save habit"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Database error: Failed to save habit")).not.toBeInTheDocument();
     });
 
     if (!resolveRetry) throw new Error("resolver not ready");
