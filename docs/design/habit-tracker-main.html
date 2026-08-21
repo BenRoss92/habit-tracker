@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Tracker — Main View</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0f4f8; font-family: 'Nunito', sans-serif; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; }
+  .hw { padding: 1.5rem; max-width: 600px; width: 100%; background: #EBF4FF; border-radius: 16px; }
+  .hw-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .hw-date { font-size: 22px; font-weight: 700; color: #1a3a5c; letter-spacing: -0.3px; }
+  .add-btn { font-size: 14px; font-weight: 700; padding: 9px 20px; border: 2px solid #1a6bbf; border-radius: 20px; background: #ffffff; color: #1a6bbf; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Nunito', sans-serif; }
+  .day-strip { display: flex; gap: 8px; margin-bottom: 0.75rem; }
+  .day-col { flex: 1; text-align: center; }
+  .day-lbl { font-size: 11px; font-weight: 600; color: #4a7ab5; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .dot-wrap { width: 32px; height: 32px; margin: 0 auto; }
+  .dot-wrap svg { width: 32px; height: 32px; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.25rem; margin-top: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #4a7ab5; font-weight: 500; }
+  .section-lbl { font-size: 13px; font-weight: 700; color: #1a3a5c; margin-bottom: 0.75rem; letter-spacing: 0.02em; }
+  .habit-card { background: #ffffff; border: 1.5px solid #b8d4f0; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+  .habit-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #1a6bbf; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .habit-check.done { background: #1a6bbf; border-color: #1a6bbf; }
+  .habit-check.done i { color: #fff; font-size: 14px; }
+  .habit-info { flex: 1; }
+  .habit-name { font-size: 17px; font-weight: 600; color: #1a3a5c; }
+  .habit-actions { display: flex; gap: 10px; align-items: center; }
+  .habit-action-icon { font-size: 17px; color: #7aaad4; cursor: pointer; }
+  .streak-badge { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; padding: 5px 13px; border-radius: 20px; white-space: nowrap; font-family: 'Nunito', sans-serif; }
+  .streak-empty { background: transparent; border: 2px solid #b8d4f0; padding: 5px 13px; border-radius: 20px; display: inline-flex; align-items: center; width: 44px; height: 34px; }
+  .streak-1 { background: #dbeeff; color: #1a5a9e; border: 2px solid #93c5e8; }
+  .streak-2 { background: #93c5e8; color: #0e3d6e; border: 2px solid #5aaad4; }
+  .streak-3 { background: #1a6bbf; color: #ffffff; border: 2px solid #1a55a0; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 1.25rem; }
+  .stat-card { background: #ffffff; border-radius: 12px; padding: 0.85rem 1rem; border: 1.5px solid #b8d4f0; }
+  .stat-lbl { font-size: 11px; color: #7aaad4; margin-bottom: 4px; letter-spacing: 0.06em; font-weight: 700; text-transform: uppercase; }
+  .stat-val { font-size: 22px; font-weight: 700; color: #1a3a5c; line-height: 1.2; }
+  .stat-sub { font-size: 12px; color: #4a7ab5; margin-top: 3px; line-height: 1.4; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="hw">
+  <div class="hw-header">
+    <p class="hw-date">Sunday, 6 Jul</p>
+    <button class="add-btn"><i class="ti ti-plus"></i> Add habit</button>
+  </div>
+
+  <div class="day-strip">
+    <div class="day-col"><div class="day-lbl">M</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#1a6bbf" stroke="#1a55a0" stroke-width="2"/><text x="16" y="21" text-anchor="middle" font-size="14" fill="#FFD700" font-family="sans-serif">⭐</text></svg></div></div>
+    <div class="day-col"><div class="day-lbl">T</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#5aaad4" stroke-width="2"/><clipPath id="c1"><circle cx="16" cy="16" r="14"/></clipPath><path d="M16 2 A14 14 0 0 1 30 16 L16 16 Z" fill="#1a6bbf" clip-path="url(#c1)"/><circle cx="16" cy="16" r="14" fill="none" stroke="#5aaad4" stroke-width="2"/></svg></div></div>
+    <div class="day-col"><div class="day-lbl">W</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#5aaad4" stroke-width="2"/><clipPath id="c2"><circle cx="16" cy="16" r="14"/></clipPath><path d="M16 2 A14 14 0 0 1 16 30 L16 16 Z" fill="#1a6bbf" clip-path="url(#c2)"/><circle cx="16" cy="16" r="14" fill="none" stroke="#5aaad4" stroke-width="2"/></svg></div></div>
+    <div class="day-col"><div class="day-lbl">T</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#5aaad4" stroke-width="2"/><clipPath id="c3"><circle cx="16" cy="16" r="14"/></clipPath><path d="M16 2 A14 14 0 0 1 30 16 L16 16 Z" fill="#1a6bbf" clip-path="url(#c3)"/><circle cx="16" cy="16" r="14" fill="none" stroke="#5aaad4" stroke-width="2"/></svg></div></div>
+    <div class="day-col"><div class="day-lbl">F</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#5aaad4" stroke-width="2"/></svg></div></div>
+    <div class="day-col"><div class="day-lbl">S</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#5aaad4" stroke-width="2"/><clipPath id="c4"><circle cx="16" cy="16" r="14"/></clipPath><path d="M16 2 A14 14 0 0 1 21.9 5.1 L16 16 Z" fill="#1a6bbf" clip-path="url(#c4)"/><circle cx="16" cy="16" r="14" fill="none" stroke="#5aaad4" stroke-width="2"/></svg></div></div>
+    <div class="day-col"><div class="day-lbl">S</div><div class="dot-wrap"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#dbeeff" stroke="#1a6bbf" stroke-width="3"/></svg></div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#1a6bbf" stroke="#1a55a0" stroke-width="1"/><text x="6" y="9.5" text-anchor="middle" font-size="7" fill="#FFD700" font-family="sans-serif">⭐</text></svg> All habits completed</div>
+    <div class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#dbeeff" stroke="#5aaad4" stroke-width="1.5"/><clipPath id="lc1"><circle cx="6" cy="6" r="5"/></clipPath><path d="M6 1 A5 5 0 0 1 6 11 Z" fill="#1a6bbf" clip-path="url(#lc1)"/></svg> Some habits completed</div>
+    <div class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#dbeeff" stroke="#5aaad4" stroke-width="1.5"/></svg> Nothing completed</div>
+    <div class="legend-item"><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#dbeeff" stroke="#1a6bbf" stroke-width="2.5"/></svg> Today</div>
+  </div>
+
+  <p class="section-lbl">Habits</p>
+
+  <div class="habit-card">
+    <div class="habit-check done"><i class="ti ti-check"></i></div>
+    <div class="habit-info"><p class="habit-name">Morning run</p></div>
+    <div class="habit-actions"><span class="streak-badge streak-3">🔥 12</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
+  </div>
+  <div class="habit-card">
+    <div class="habit-check done"><i class="ti ti-check"></i></div>
+    <div class="habit-info"><p class="habit-name">Read for 20 mins</p></div>
+    <div class="habit-actions"><span class="streak-badge streak-3">🔥 5</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
+  </div>
+  <div class="habit-card">
+    <div class="habit-check"></div>
+    <div class="habit-info"><p class="habit-name">Meditate</p></div>
+    <div class="habit-actions"><span class="streak-badge streak-2">2</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
+  </div>
+  <div class="habit-card">
+    <div class="habit-check"></div>
+    <div class="habit-info"><p class="habit-name">No caffeine after 2pm</p></div>
+    <div class="habit-actions"><span class="streak-badge streak-1">1</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
+  </div>
+  <div class="habit-card">
+    <div class="habit-check"></div>
+    <div class="habit-info"><p class="habit-name">Drink 2L of water</p></div>
+    <div class="habit-actions"><span class="streak-empty"></span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-lbl">Today</div><div class="stat-val">2/5</div><div class="stat-sub">habits completed</div></div>
+    <div class="stat-card"><div class="stat-lbl">Daily Streak</div><div class="stat-val">6</div><div class="stat-sub">days active</div></div>
+    <div class="stat-card"><div class="stat-lbl">Best Streak</div><div class="stat-val">🔥 12</div><div class="stat-sub">Morning run</div></div>
+  </div>
+</div>
+</body>
+</html>
