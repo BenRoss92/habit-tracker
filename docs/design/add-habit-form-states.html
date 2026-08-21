@@ -1,138 +1,367 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Habit Tracker — Add Habit Form States</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f0f4f8; font-family: 'Nunito', sans-serif; min-height: 100vh; padding: 2rem 1rem; }
-  .page { max-width: 600px; margin: 0 auto; }
-  .state-label { font-size: 12px; font-weight: 700; color: #7aaad4; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
-  .hw { padding: 1.25rem 1.5rem; background: #EBF4FF; border-radius: 16px; margin-bottom: 2.5rem; }
-  .hw-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-  .hw-date { font-size: 22px; font-weight: 700; color: #1a3a5c; }
-  .add-btn { font-size: 14px; font-weight: 700; padding: 9px 20px; border: 2px solid #1a6bbf; border-radius: 20px; background: #ffffff; color: #1a6bbf; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Nunito', sans-serif; }
-  .add-btn.faded { opacity: 0.4; cursor: default; }
-  .add-btn.disabled { border-color: #b8d4f0; color: #b8d4f0; cursor: not-allowed; }
-  .add-form { background: #ffffff; border: 1.5px solid #1a6bbf; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; }
-  .add-form.error-state { border-color: #d93025; }
-  .add-form.pending { opacity: 0.6; }
-  .add-form-label { font-size: 12px; font-weight: 700; color: #1a3a5c; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; }
-  .add-form-input { width: 100%; padding: 9px 12px; border: 1.5px solid #b8d4f0; border-radius: 10px; font-size: 15px; font-weight: 500; color: #1a3a5c; background: #ffffff; outline: none; font-family: 'Nunito', sans-serif; }
-  .add-form-input.error { border-color: #d93025; background: #fff8f8; }
-  .add-form-input.disabled-input { background: #f0f4f8; color: #b8d4f0; cursor: not-allowed; }
-  .error-msg { font-size: 12px; font-weight: 600; color: #d93025; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
-  .add-form-actions { display: flex; gap: 8px; margin-top: 10px; }
-  .btn-submit { font-size: 14px; font-weight: 700; padding: 8px 18px; border: none; border-radius: 20px; background: #1a6bbf; color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Nunito', sans-serif; }
-  .btn-submit.disabled { background: #b8d4f0; cursor: not-allowed; }
-  .btn-cancel { font-size: 14px; font-weight: 600; padding: 8px 18px; border: 1.5px solid #b8d4f0; border-radius: 20px; background: #ffffff; color: #4a7ab5; cursor: pointer; font-family: 'Nunito', sans-serif; }
-  .btn-cancel.disabled { color: #b8d4f0; border-color: #dbeeff; cursor: not-allowed; }
-  .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .habit-card { background: #ffffff; border: 1.5px solid #b8d4f0; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
-  .habit-card.dimmed { opacity: 0.45; }
-  .habit-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #1a6bbf; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .habit-check.done { background: #1a6bbf; border-color: #1a6bbf; }
-  .habit-check.done i { color: #fff; font-size: 14px; }
-  .habit-name { font-size: 17px; font-weight: 600; color: #1a3a5c; }
-  .habit-actions { display: flex; gap: 10px; align-items: center; margin-left: auto; }
-  .habit-action-icon { font-size: 17px; color: #7aaad4; }
-  .streak-badge { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; padding: 5px 13px; border-radius: 20px; white-space: nowrap; }
-  .streak-3 { background: #1a6bbf; color: #ffffff; border: 2px solid #1a55a0; }
-  .section-lbl { font-size: 13px; font-weight: 700; color: #1a3a5c; margin-bottom: 0.75rem; }
-</style>
-</head>
-<body>
-<div class="page">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Tracker — Add Habit Form States</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #f0f4f8;
+        font-family: "Nunito", sans-serif;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+      .page {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .state-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #7aaad4;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.6rem;
+      }
+      .hw {
+        padding: 1.25rem 1.5rem;
+        background: #ebf4ff;
+        border-radius: 16px;
+        margin-bottom: 2.5rem;
+      }
+      .hw-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+      }
+      .hw-date {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a3a5c;
+      }
+      .add-btn {
+        font-size: 14px;
+        font-weight: 700;
+        padding: 9px 20px;
+        border: 2px solid #1a6bbf;
+        border-radius: 20px;
+        background: #ffffff;
+        color: #1a6bbf;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Nunito", sans-serif;
+      }
+      .add-btn.faded {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .add-form {
+        background: #ffffff;
+        border: 1.5px solid #1a6bbf;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 10px;
+      }
+      .add-form.error-state {
+        border-color: #d93025;
+      }
+      .add-form.pending {
+        opacity: 0.6;
+      }
+      .add-form-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1a3a5c;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        display: block;
+      }
+      .add-form-input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid #b8d4f0;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a3a5c;
+        background: #ffffff;
+        outline: none;
+        font-family: "Nunito", sans-serif;
+      }
+      .add-form-input.error {
+        border-color: #d93025;
+        background: #fff8f8;
+      }
+      .add-form-input.disabled-input {
+        background: #f0f4f8;
+        color: #b8d4f0;
+        cursor: not-allowed;
+      }
+      .error-msg {
+        font-size: 12px;
+        font-weight: 600;
+        color: #d93025;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .add-form-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .btn-submit {
+        font-size: 14px;
+        font-weight: 700;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 20px;
+        background: #1a6bbf;
+        color: #ffffff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Nunito", sans-serif;
+      }
+      .btn-submit.disabled {
+        background: #b8d4f0;
+        cursor: not-allowed;
+      }
+      .btn-cancel {
+        font-size: 14px;
+        font-weight: 600;
+        padding: 8px 18px;
+        border: 1.5px solid #b8d4f0;
+        border-radius: 20px;
+        background: #ffffff;
+        color: #4a7ab5;
+        cursor: pointer;
+        font-family: "Nunito", sans-serif;
+      }
+      .btn-cancel.disabled {
+        color: #b8d4f0;
+        border-color: #dbeeff;
+        cursor: not-allowed;
+      }
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .habit-card {
+        background: #ffffff;
+        border: 1.5px solid #b8d4f0;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .habit-card.dimmed {
+        opacity: 0.45;
+      }
+      .habit-check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #1a6bbf;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .habit-check.done {
+        background: #1a6bbf;
+        border-color: #1a6bbf;
+      }
+      .habit-check.done i {
+        color: #fff;
+        font-size: 14px;
+      }
+      .habit-name {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1a3a5c;
+      }
+      .habit-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-left: auto;
+      }
+      .habit-action-icon {
+        font-size: 17px;
+        color: #7aaad4;
+      }
+      .streak-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 5px 13px;
+        border-radius: 20px;
+        white-space: nowrap;
+      }
+      .streak-3 {
+        background: #1a6bbf;
+        color: #ffffff;
+        border: 2px solid #1a55a0;
+      }
+      .section-lbl {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a3a5c;
+        margin-bottom: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- STATE 1 -->
+      <p class="state-label">State 1 — User clicks "Add habit"</p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <button class="add-btn faded"><i class="ti ti-plus"></i> Add habit</button>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="add-form">
+          <label class="add-form-label">Habit name</label>
+          <input class="add-form-input" type="text" placeholder="e.g. Morning run" />
+          <div class="add-form-actions">
+            <button class="btn-submit">Add</button>
+            <button class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check done"><i class="ti ti-check"></i></div>
+          <p class="habit-name">Morning run</p>
+          <div class="habit-actions">
+            <span class="streak-badge streak-3">🔥 12</span
+            ><i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check"></div>
+          <p class="habit-name">Meditate</p>
+          <div class="habit-actions">
+            <i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
+      </div>
 
-  <!-- STATE 1 -->
-  <p class="state-label">State 1 — User clicks "Add habit"</p>
-  <div class="hw">
-    <div class="hw-header">
-      <p class="hw-date">Sunday, 6 Jul</p>
-      <button class="add-btn faded"><i class="ti ti-plus"></i> Add habit</button>
-    </div>
-    <p class="section-lbl">Habits</p>
-    <div class="add-form">
-      <label class="add-form-label">Habit name</label>
-      <input class="add-form-input" type="text" placeholder="e.g. Morning run" />
-      <div class="add-form-actions">
-        <button class="btn-submit">Add</button>
-        <button class="btn-cancel">Cancel</button>
+      <!-- STATE 2 -->
+      <p class="state-label">State 2 — User submits an empty or invalid name</p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <button class="add-btn faded"><i class="ti ti-plus"></i> Add habit</button>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="add-form error-state">
+          <label class="add-form-label">Habit name</label>
+          <input class="add-form-input error" type="text" placeholder="e.g. Morning run" />
+          <div class="error-msg">
+            <i class="ti ti-alert-circle" style="font-size: 13px"></i> Please enter a habit name
+          </div>
+          <div class="add-form-actions">
+            <button class="btn-submit">Add</button>
+            <button class="btn-cancel">Cancel</button>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check done"><i class="ti ti-check"></i></div>
+          <p class="habit-name">Morning run</p>
+          <div class="habit-actions">
+            <span class="streak-badge streak-3">🔥 12</span
+            ><i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check"></div>
+          <p class="habit-name">Meditate</p>
+          <div class="habit-actions">
+            <i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATE 3 -->
+      <p class="state-label">
+        State 3 — Submission in progress (only the add-habit form and header button are disabled —
+        the rest of the habit list stays fully usable)
+      </p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <button class="add-btn faded"><i class="ti ti-plus"></i> Add habit</button>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="add-form pending">
+          <label class="add-form-label">Habit name</label>
+          <input class="add-form-input disabled-input" type="text" value="Evening walk" disabled />
+          <div class="add-form-actions">
+            <button class="btn-submit disabled" disabled>
+              <div class="spinner"></div>
+              Adding…
+            </button>
+            <button class="btn-cancel disabled" disabled>Cancel</button>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check done"><i class="ti ti-check"></i></div>
+          <p class="habit-name">Morning run</p>
+          <div class="habit-actions">
+            <span class="streak-badge streak-3">🔥 12</span
+            ><i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
+        <div class="habit-card">
+          <div class="habit-check"></div>
+          <p class="habit-name">Meditate</p>
+          <div class="habit-actions">
+            <i class="ti ti-edit habit-action-icon"></i
+            ><i class="ti ti-trash habit-action-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="habit-card">
-      <div class="habit-check done"><i class="ti ti-check"></i></div>
-      <p class="habit-name">Morning run</p>
-      <div class="habit-actions"><span class="streak-badge streak-3">🔥 12</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-    <div class="habit-card">
-      <div class="habit-check"></div>
-      <p class="habit-name">Meditate</p>
-      <div class="habit-actions"><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-  </div>
-
-  <!-- STATE 2 -->
-  <p class="state-label">State 2 — User submits an empty or invalid name</p>
-  <div class="hw">
-    <div class="hw-header">
-      <p class="hw-date">Sunday, 6 Jul</p>
-      <button class="add-btn faded"><i class="ti ti-plus"></i> Add habit</button>
-    </div>
-    <p class="section-lbl">Habits</p>
-    <div class="add-form error-state">
-      <label class="add-form-label">Habit name</label>
-      <input class="add-form-input error" type="text" placeholder="e.g. Morning run" />
-      <div class="error-msg"><i class="ti ti-alert-circle" style="font-size:13px"></i> Please enter a habit name</div>
-      <div class="add-form-actions">
-        <button class="btn-submit">Add</button>
-        <button class="btn-cancel">Cancel</button>
-      </div>
-    </div>
-    <div class="habit-card">
-      <div class="habit-check done"><i class="ti ti-check"></i></div>
-      <p class="habit-name">Morning run</p>
-      <div class="habit-actions"><span class="streak-badge streak-3">🔥 12</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-    <div class="habit-card">
-      <div class="habit-check"></div>
-      <p class="habit-name">Meditate</p>
-      <div class="habit-actions"><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-  </div>
-
-  <!-- STATE 3 -->
-  <p class="state-label">State 3 — Submission in progress</p>
-  <div class="hw">
-    <div class="hw-header">
-      <p class="hw-date">Sunday, 6 Jul</p>
-      <button class="add-btn disabled" disabled><i class="ti ti-plus"></i> Add habit</button>
-    </div>
-    <p class="section-lbl">Habits</p>
-    <div class="add-form pending">
-      <label class="add-form-label">Habit name</label>
-      <input class="add-form-input disabled-input" type="text" value="Evening walk" disabled />
-      <div class="add-form-actions">
-        <button class="btn-submit disabled" disabled><div class="spinner"></div> Adding…</button>
-        <button class="btn-cancel disabled" disabled>Cancel</button>
-      </div>
-    </div>
-    <div class="habit-card dimmed">
-      <div class="habit-check done"><i class="ti ti-check"></i></div>
-      <p class="habit-name">Morning run</p>
-      <div class="habit-actions"><span class="streak-badge streak-3">🔥 12</span><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-    <div class="habit-card dimmed">
-      <div class="habit-check"></div>
-      <p class="habit-name">Meditate</p>
-      <div class="habit-actions"><i class="ti ti-edit habit-action-icon"></i><i class="ti ti-trash habit-action-icon"></i></div>
-    </div>
-  </div>
-
-</div>
-</body>
+  </body>
 </html>
