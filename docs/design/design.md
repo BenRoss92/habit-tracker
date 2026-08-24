@@ -32,7 +32,7 @@ Weights used: 400, 500, 600, 700
 | Element                      | Size | Weight  | Colour          |
 | ---------------------------- | ---- | ------- | --------------- |
 | Date heading                 | 22px | 700     | #1a3a5c         |
-| Section label ("Habits")     | 13px | 700     | #1a3a5c         |
+| Section label ("Habits")     | 18px | 700     | #1a3a5c         |
 | Habit name                   | 17px | 600     | #1a3a5c         |
 | Day strip labels (M/T/W etc) | 11px | 600     | #4a7ab5         |
 | Legend text                  | 11px | 500     | #4a7ab5         |
