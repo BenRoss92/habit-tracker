@@ -18,7 +18,7 @@ export function HabitsSection({ habits }: { habits: Habit[] }) {
       <div className="flex justify-end">
         <AddHabitButton toggleEditing={toggleEditing} isEditing={isEditing} />
       </div>
-      <h2 className="mb-3 text-[13px] text-heading font-bold">Habits</h2>
+      <h2 className="mb-3 text-[18px] text-heading font-bold">Habits</h2>
       <AddHabitForm setIsEditing={setIsEditing} isEditing={isEditing} />
       <HabitList habits={habits} />
     </div>
