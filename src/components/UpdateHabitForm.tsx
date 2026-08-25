@@ -1,7 +1,7 @@
 "use client";
 
 import { updateHabit } from "@/app/actions";
-import { Habit } from "@/lib/types";
+import { ActiveAction, Habit } from "@/lib/types";
 import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
 import { Dispatch, SetStateAction, useState } from "react";
 import { tv } from "tailwind-variants";
@@ -42,10 +42,10 @@ const updateHabitForm = tv({
 
 export function UpdateHabitForm({
   habit,
-  setIsUpdating,
+  setActiveAction,
 }: {
   habit: Habit;
-  setIsUpdating: Dispatch<SetStateAction<boolean>>;
+  setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
 }) {
   // Set the default value to be whatever is currently being shown in the HabitItem
   // TODO: Check whether using a prop as default state is an anit-pattern in React?
@@ -66,7 +66,7 @@ export function UpdateHabitForm({
   const { form, input, submitButton, cancelButton } = updateHabitForm({ state: formState });
 
   function cancelEdit() {
-    setIsUpdating(false);
+    setActiveAction({ type: "none" });
     setError(undefined);
     setLocalHabitName(habit.name);
   }
@@ -89,7 +89,7 @@ export function UpdateHabitForm({
       return;
     }
 
-    setIsUpdating(false);
+    setActiveAction({ type: "none" });
     setLocalHabitName("");
     setError(undefined);
     setIsPending(false);
@@ -97,7 +97,10 @@ export function UpdateHabitForm({
 
   return (
     <form onSubmit={submitHabit} className={form()}>
-      <label className=" mb-1.5 text-xs font-bold text-heading uppercase" htmlFor="update-habit-name">
+      <label
+        className=" mb-1.5 text-xs font-bold text-heading uppercase"
+        htmlFor="update-habit-name"
+      >
         Edit habit name
       </label>
       <input

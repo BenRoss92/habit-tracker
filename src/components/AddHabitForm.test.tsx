@@ -15,20 +15,33 @@ import { createHabit } from "@/app/actions";
 const mockedCreateHabit = jest.mocked(createHabit);
 
 describe("AddHabitForm component", () => {
-  const mockSetIsEditing = jest.fn();
+  const mockSetActiveAction = jest.fn();
 
   beforeEach(() => {
     mockedCreateHabit.mockReset();
-    mockSetIsEditing.mockReset();
+    mockSetActiveAction.mockReset();
   });
 
-  test("renders nothing when not editing", () => {
+  test("renders nothing when nothing is active", () => {
     const { container } = render(
-      <AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />,
+      <AddHabitForm activeAction={{ type: "none" }} setActiveAction={mockSetActiveAction} />,
     );
 
     // AddHabitForm no longer owns its own "Add habit" trigger button - that's
-    // AddHabitButton's job now, controlled externally via the isEditing prop.
+    // AddHabitButton's job now, controlled externally via the activeAction prop.
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  test("renders nothing when a different action is active (editing a habit)", () => {
+    // Proves the render gate checks specifically for `type === "adding"`, not just
+    // "anything other than none" - a habit being edited elsewhere must not also open this form.
+    const { container } = render(
+      <AddHabitForm
+        activeAction={{ type: "editing", habitId: "1" }}
+        setActiveAction={mockSetActiveAction}
+      />,
+    );
+
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -41,7 +54,9 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     const inputField = screen.getByLabelText("Habit name");
     await user.type(inputField, "Meditate");
@@ -56,9 +71,9 @@ describe("AddHabitForm component", () => {
     // typed value is preserved
     expect(inputField).toHaveValue("Meditate");
 
-    // Closing the form is the parent's job (via setIsEditing) - on failure, AddHabitForm
+    // Closing the form is the parent's job (via setActiveAction) - on failure, AddHabitForm
     // never calls it, so the parent has no reason to stop rendering the form as open.
-    expect(mockSetIsEditing).not.toHaveBeenCalled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
   test("tells the parent to close the form after a successful submission, and clears the input", async () => {
@@ -66,20 +81,22 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
     await user.click(screen.getByText("Add"));
 
     // AddHabitForm doesn't own whether it's shown - it just tells the parent
-    // (via setIsEditing) that submission succeeded, and the parent decides to stop
+    // (via setActiveAction) that submission succeeded, and the parent decides to stop
     // rendering it as open. Assert both the mock call and the settled input value
     // together, so waitFor keeps polling until every state update from the success
     // path (not just the first one) has actually committed - checking only the mock
     // call lets waitFor resolve before React finishes flushing the rest, which is what
     // was producing "not wrapped in act(...)" warnings.
     await waitFor(() => {
-      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
       expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
   });
@@ -89,20 +106,27 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    const { rerender } = render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    const { rerender } = render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
     await user.click(screen.getByText("Add"));
 
     await waitFor(() => {
-      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
       expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
 
-    // Simulate the parent reacting to setIsEditing(false), then the user reopening the
-    // form via AddHabitButton elsewhere - isEditing goes false, then true again.
-    rerender(<AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />);
-    rerender(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    // Simulate the parent reacting to setActiveAction({ type: "none" }), then the user
+    // reopening the form via AddHabitButton elsewhere - activeAction goes to none, then
+    // back to adding.
+    rerender(
+      <AddHabitForm activeAction={{ type: "none" }} setActiveAction={mockSetActiveAction} />,
+    );
+    rerender(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     expect(screen.getByLabelText("Habit name")).toHaveValue("");
   });
@@ -132,7 +156,9 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
     await user.click(screen.getByText("Add"));
@@ -169,7 +195,7 @@ describe("AddHabitForm component", () => {
     // was not wrapped in act(...). So don't explicitly await the promise to resolve - it's not
     // needed.
     await waitFor(() => {
-      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
       expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
   });
@@ -180,7 +206,9 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
     await user.click(screen.getByText("Add"));
@@ -209,7 +237,7 @@ describe("AddHabitForm component", () => {
     // Let the retry resolve so the test doesn't leak a dangling act() warning - the retry
     // succeeds, so wait for the same settled state the other success-path tests check.
     await waitFor(() => {
-      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
       expect(screen.getByLabelText("Habit name")).toHaveValue("");
     });
   });
@@ -219,7 +247,9 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    const { rerender } = render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    const { rerender } = render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     // Get the form into a non-trivial state first - typed text and a visible error -
     // so cancelling has something real to clear, not just an already-empty form.
@@ -229,13 +259,17 @@ describe("AddHabitForm component", () => {
 
     await user.click(screen.getByText("Cancel"));
 
-    expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+    expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
 
-    // Simulate the parent reacting to setIsEditing(false), then the user reopening the
-    // form via AddHabitButton elsewhere - confirms neither the typed name nor the error
-    // lingered in AddHabitForm's own state after cancelling.
-    rerender(<AddHabitForm isEditing={false} setIsEditing={mockSetIsEditing} />);
-    rerender(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    // Simulate the parent reacting to setActiveAction({ type: "none" }), then the user
+    // reopening the form via AddHabitButton elsewhere - confirms neither the typed name nor
+    // the error lingered in AddHabitForm's own state after cancelling.
+    rerender(
+      <AddHabitForm activeAction={{ type: "none" }} setActiveAction={mockSetActiveAction} />,
+    );
+    rerender(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     expect(screen.getByLabelText("Habit name")).toHaveValue("");
     expect(screen.queryByText("Database error: Failed to save habit")).not.toBeInTheDocument();
@@ -252,7 +286,9 @@ describe("AddHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<AddHabitForm isEditing={true} setIsEditing={mockSetIsEditing} />);
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
 
     await user.type(screen.getByLabelText("Habit name"), "Meditate");
     await user.click(screen.getByText("Add"));
@@ -266,13 +302,13 @@ describe("AddHabitForm component", () => {
     // in-flight request still completing and adding the habit) even though the button
     // looked disabled.
     await user.click(cancelButton);
-    expect(mockSetIsEditing).not.toHaveBeenCalled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Habit name")).toHaveValue("Meditate");
 
     if (!resolveCreateHabit) throw new Error("resolver not ready");
     resolveCreateHabit({});
     await waitFor(() => {
-      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
     });
   });
 });

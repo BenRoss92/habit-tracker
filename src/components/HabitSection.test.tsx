@@ -26,68 +26,91 @@ describe("HabitSection component", () => {
     mockedUpdateHabit.mockReset();
   });
 
-  describe("given the section has just loaded", () => {
-    it("then shows the habit name and no open form", () => {
-      render(<HabitSection habit={habit} />);
+  describe("given nothing is active", () => {
+    it("then shows the habit name, an enabled edit icon, and no open form", () => {
+      render(
+        <HabitSection habit={habit} activeAction={{ type: "none" }} setActiveAction={jest.fn()} />,
+      );
 
       expect(screen.getByText("Morning run")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Edit habit" })).toBeEnabled();
       expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
     });
   });
 
-  describe("when the user clicks the edit icon", () => {
-    it("then opens the update form, pre-filled with the current name, and hides the habit row", async () => {
-      const user = userEvent.setup();
+  describe("given a different habit is being edited", () => {
+    it("then shows this habit's row with a disabled edit icon, not this habit's form", () => {
+      render(
+        <HabitSection
+          habit={habit}
+          activeAction={{ type: "editing", habitId: "some-other-id" }}
+          setActiveAction={jest.fn()}
+        />,
+      );
 
-      render(<HabitSection habit={habit} />);
+      expect(screen.getByText("Morning run")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Edit habit" })).toBeDisabled();
+      expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
+    });
+  });
 
-      const editIcon = screen.getByRole("button", { name: "Edit habit" });
-      await user.click(editIcon);
+  describe("given this habit is being edited", () => {
+    it("then shows the update form, pre-filled with the current name, instead of the habit row", () => {
+      render(
+        <HabitSection
+          habit={habit}
+          activeAction={{ type: "editing", habitId: habit.id }}
+          setActiveAction={jest.fn()}
+        />,
+      );
 
       expect(screen.getByLabelText("Edit habit name")).toHaveValue("Morning run");
       expect(screen.queryByText("Morning run", { selector: "span" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Edit habit" })).not.toBeInTheDocument();
     });
   });
 
   describe("given the update form is open", () => {
-    async function openForm(user: ReturnType<typeof userEvent.setup>) {
-      const editIcon = screen.getByRole("button", { name: "Edit habit" });
-      await user.click(editIcon);
-    }
-
     describe("when the user clicks Cancel", () => {
-      it("then closes the form and shows the habit row again", async () => {
-        // This is the cross-component proof UpdateHabitForm's own tests can't give: there,
-        // setIsUpdating is a jest.fn() that does nothing, so nothing confirms that calling it
-        // for real actually closes the form and shows the habit row again. Here it's the real
-        // setIsUpdating from HabitSection's own useState.
+      it("then tells the parent to clear the active action", async () => {
         const user = userEvent.setup();
+        const setActiveAction = jest.fn();
 
-        render(<HabitSection habit={habit} />);
-        await openForm(user);
+        render(
+          <HabitSection
+            habit={habit}
+            activeAction={{ type: "editing", habitId: habit.id }}
+            setActiveAction={setActiveAction}
+          />,
+        );
 
         await user.click(screen.getByText("Cancel"));
 
-        expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
-        expect(screen.getByText("Morning run")).toBeInTheDocument();
+        expect(setActiveAction).toHaveBeenCalledWith({ type: "none" });
       });
     });
 
     describe("when a habit update is submitted successfully", () => {
-      it("then closes the form and shows the habit row again", async () => {
+      it("then tells the parent to clear the active action", async () => {
         mockedUpdateHabit.mockResolvedValue({});
 
         const user = userEvent.setup();
+        const setActiveAction = jest.fn();
 
-        render(<HabitSection habit={habit} />);
-        await openForm(user);
+        render(
+          <HabitSection
+            habit={habit}
+            activeAction={{ type: "editing", habitId: habit.id }}
+            setActiveAction={setActiveAction}
+          />,
+        );
 
         await user.clear(screen.getByLabelText("Edit habit name"));
         await user.type(screen.getByLabelText("Edit habit name"), "Evening run");
         await user.click(screen.getByText("Update"));
 
         await waitFor(() => {
-          expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
+          expect(setActiveAction).toHaveBeenCalledWith({ type: "none" });
         });
       });
     });

@@ -4,6 +4,7 @@ import { createHabit } from "@/app/actions";
 import { Dispatch, SetStateAction, useState } from "react";
 import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
 import { tv } from "tailwind-variants";
+import { ActiveAction } from "@/lib/types";
 
 const addHabitForm = tv({
   slots: {
@@ -40,11 +41,11 @@ const addHabitForm = tv({
 });
 
 export function AddHabitForm({
-  setIsEditing,
-  isEditing,
+  activeAction,
+  setActiveAction,
 }: {
-  setIsEditing: Dispatch<SetStateAction<boolean>>;
-  isEditing: boolean;
+  activeAction: ActiveAction;
+  setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
 }) {
   const [habitName, setHabitName] = useState("");
   const [error, setError] = useState<string | undefined>();
@@ -67,7 +68,7 @@ export function AddHabitForm({
   }
 
   function cancelEdit() {
-    setIsEditing(false);
+    setActiveAction({ type: "none" });
     setError(undefined);
     setHabitName("");
   }
@@ -91,14 +92,14 @@ export function AddHabitForm({
     }
 
     // If there's no error, exit edit mode
-    setIsEditing(false);
+    setActiveAction({ type: "none" });
     setHabitName("");
     setError(undefined);
     setIsPending(false);
   }
 
   return (
-    isEditing && (
+    activeAction.type === "adding" && (
       <form onSubmit={submitHabitName} className={form()}>
         {/* Adding a label also does the same job as 'aria-label' 
       as it serves both screen readers 

@@ -8,6 +8,7 @@ import userEvent from "@testing-library/user-event";
 // the actual wiring between them (not just each component in isolation) gets exercised.
 jest.mock("@/app/actions", () => ({
   createHabit: jest.fn(),
+  updateHabit: jest.fn(),
 }));
 
 import { HabitsSection } from "@/components/HabitsSection";
@@ -43,6 +44,47 @@ describe("HabitsSection component", () => {
 
       expect(screen.getByLabelText("Habit name")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /add habit/i })).toBeDisabled();
+    });
+
+    it("then also disables every habit's edit icon", async () => {
+      // Proves the "only one action at a time" rule for real, across components: HabitsSection
+      // owns one shared activeAction, and AddHabitButton/HabitItem are both real here (not
+      // mocked), so this is the only place that can prove opening Add genuinely reaches and
+      // disables a habit row's edit icon, not just the Add button itself.
+      const user = userEvent.setup();
+
+      render(<HabitsSection habits={habits} />);
+
+      await user.click(screen.getByRole("button", { name: /add habit/i }));
+
+      expect(screen.getByRole("button", { name: "Edit habit" })).toBeDisabled();
+    });
+  });
+
+  describe("when the user clicks a habit's edit icon", () => {
+    it("then opens that habit's update form and disables the 'Add habit' button", async () => {
+      const user = userEvent.setup();
+
+      render(<HabitsSection habits={habits} />);
+
+      await user.click(screen.getByRole("button", { name: "Edit habit" }));
+
+      expect(screen.getByLabelText("Edit habit name")).toHaveValue("Meditate");
+      expect(screen.getByRole("button", { name: /add habit/i })).toBeDisabled();
+    });
+
+    describe("when the user clicks Cancel on the update form", () => {
+      it("then re-enables the 'Add habit' button", async () => {
+        const user = userEvent.setup();
+
+        render(<HabitsSection habits={habits} />);
+
+        await user.click(screen.getByRole("button", { name: "Edit habit" }));
+        await user.click(screen.getByText("Cancel"));
+
+        expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
+      });
     });
   });
 
