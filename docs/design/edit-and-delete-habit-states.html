@@ -1,0 +1,272 @@
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;font-family:'Nunito',sans-serif;margin:0;padding:0}
+.page{max-width:600px;margin:0 auto;padding:1rem 0}
+.group-title{font-size:16px;font-weight:700;color:#1a3a5c;margin:2rem 0 1rem;padding-bottom:0.5rem;border-bottom:2px solid #b8d4f0}
+.state-label{font-size:11px;font-weight:700;color:#7aaad4;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem}
+.hw{padding:1.25rem 1.5rem;background:#EBF4FF;border-radius:16px;margin-bottom:2rem}
+.hw-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.hw-date{font-size:22px;font-weight:700;color:#1a3a5c}
+.section-lbl{font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:0.75rem}
+.add-btn{font-size:14px;font-weight:700;padding:9px 20px;border:2px solid #1a6bbf;border-radius:20px;background:#fff;color:#1a6bbf;display:inline-flex;align-items:center;gap:6px}
+
+/* Normal habit card */
+.habit-card{background:#fff;border:1.5px solid #b8d4f0;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.habit-card.success{background:#f0faf4;border:2px solid #1a9e5c}
+.habit-check{width:28px;height:28px;border-radius:50%;border:2px solid #1a6bbf;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
+.habit-check.done{background:#1a6bbf;border-color:#1a6bbf}
+.habit-name{font-size:17px;font-weight:600;color:#1a3a5c}
+.habit-actions{display:flex;gap:10px;align-items:center;margin-left:auto}
+.icon{font-size:17px;color:#7aaad4}
+.s3{display:inline-flex;align-items:center;gap:5px;font-size:15px;font-weight:700;padding:5px 13px;border-radius:20px;background:#1a6bbf;color:#fff;border:2px solid #1a55a0;white-space:nowrap}
+.s2{display:inline-flex;align-items:center;gap:5px;font-size:15px;font-weight:700;padding:5px 13px;border-radius:20px;background:#93c5e8;color:#0e3d6e;border:2px solid #5aaad4;white-space:nowrap}
+.s-empty{background:transparent;border:2px solid #b8d4f0;padding:5px 13px;border-radius:20px;display:inline-flex;align-items:center;width:44px;height:34px}
+
+/* Form card */
+.form-card{background:#fff;border:1.5px solid #1a6bbf;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px}
+.form-card.err{border-color:#d93025}
+.form-card.pend{opacity:0.6}
+.form-label{font-size:12px;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block}
+
+/* Div-based fake input fields — no browser overrides */
+.fake-input{width:100%;padding:9px 12px;border:1.5px solid #1a6bbf;border-radius:10px;font-size:15px;font-weight:500;color:#1a3a5c;background:#fff;font-family:'Nunito',sans-serif;min-height:38px;display:flex;align-items:center}
+.fake-input.normal{border-color:#b8d4f0;color:#9ab5d0}
+.fake-input.err{border-color:#d93025;background:#fff8f8;color:#1a3a5c}
+.fake-input.placeholder{border-color:#d93025;background:#fff8f8;color:#b8d4f0}
+.fake-input.dis{border-color:#b8d4f0;background:#f0f4f8;color:#b8d4f0}
+
+.err-msg{font-size:12px;font-weight:600;color:#d93025;margin-top:5px;display:flex;align-items:center;gap:4px}
+.form-actions{display:flex;gap:8px;margin-top:10px}
+
+/* Div-based buttons */
+.btn-primary{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:8px 18px;border-radius:20px;background:#1a6bbf;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap}
+.btn-primary.dis{background:#b8d4f0;cursor:not-allowed}
+.btn-cancel{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;padding:8px 18px;border-radius:20px;background:#fff;color:#4a7ab5;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;border:1.5px solid #b8d4f0}
+.btn-cancel.dis{color:#b8d4f0;border-color:#dbeeff;cursor:not-allowed}
+.btn-danger{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:8px 18px;border-radius:20px;background:#d93025;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap}
+.btn-danger.dis{background:#f0a09a;cursor:not-allowed}
+
+/* Delete card */
+.del-card{background:#fff;border:2px solid #d93025;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px}
+.del-card.pend{opacity:0.6}
+.del-warning{font-size:13px;font-weight:700;color:#d93025;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.del-habit-name{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:4px}
+.del-subtext{font-size:12px;color:#4a7ab5;margin-bottom:12px;line-height:1.5}
+
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<div class="page">
+
+  <!-- ══════════════════ EDITING ══════════════════ -->
+  <div class="group-title">✏️ Editing a habit</div>
+
+  <!-- E1: form open, input focused with blue border, pre-populated -->
+  <p class="state-label">State 1 — User clicks the edit icon</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="form-card">
+      <label class="form-label">Edit habit name</label>
+      <div class="fake-input">Read for 20 mins</div>
+      <div class="form-actions">
+        <div class="btn-primary">Update</div>
+        <div class="btn-cancel">Cancel</div>
+      </div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- E2: error state — red border on card and input, error bg, placeholder text -->
+  <p class="state-label">State 2 — User clears the input and clicks Update</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="form-card err">
+      <label class="form-label">Edit habit name</label>
+      <div class="fake-input placeholder">e.g. Read for 20 mins</div>
+      <div class="err-msg"><i class="ti ti-alert-circle" style="font-size:13px"></i> Please enter a habit name</div>
+      <div class="form-actions">
+        <div class="btn-primary">Update</div>
+        <div class="btn-cancel">Cancel</div>
+      </div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- E3: pending — card dims, input disabled bg, spinner in button -->
+  <p class="state-label">State 3 — Update in progress</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="form-card pend">
+      <label class="form-label">Edit habit name</label>
+      <div class="fake-input dis">Read for 25 mins</div>
+      <div class="form-actions">
+        <div class="btn-primary dis"><div class="spinner"></div> Updating…</div>
+        <div class="btn-cancel dis">Cancel</div>
+      </div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- E4: success — green border + tint, fades after ~1s -->
+  <p class="state-label">State 4 — Update successful (green border + tint, fades after ~1 second)</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card success">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Read for 25 mins</p>
+      <div class="habit-actions"><span class="s3">🔥 5</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ DELETING ══════════════════ -->
+  <div class="group-title">🗑️ Deleting a habit</div>
+
+  <!-- D1 -->
+  <p class="state-label">State 1 — User clicks the delete icon</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="del-card">
+      <div class="del-warning"><i class="ti ti-alert-triangle" style="font-size:15px"></i> Delete this habit?</div>
+      <p class="del-habit-name">Read for 20 mins</p>
+      <p class="del-subtext">This will permanently delete the habit and all of its history. This cannot be undone.</p>
+      <div class="form-actions">
+        <div class="btn-danger">Delete</div>
+        <div class="btn-cancel">Cancel</div>
+      </div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- D2 -->
+  <p class="state-label">State 2 — Deletion in progress</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="del-card pend">
+      <div class="del-warning"><i class="ti ti-alert-triangle" style="font-size:15px"></i> Delete this habit?</div>
+      <p class="del-habit-name">Read for 20 mins</p>
+      <p class="del-subtext">This will permanently delete the habit and all of its history. This cannot be undone.</p>
+      <div class="form-actions">
+        <div class="btn-danger dis"><div class="spinner"></div> Deleting…</div>
+        <div class="btn-cancel dis">Cancel</div>
+      </div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+  <!-- D3 -->
+  <p class="state-label">State 3 — Deletion successful (card collapses vertically and fades out)</p>
+  <div class="hw">
+    <div class="hw-header"><p class="hw-date">Sunday, 6 Jul</p><div class="add-btn">+ Add habit</div></div>
+    <p class="section-lbl">Habits</p>
+    <div class="habit-card">
+      <div class="habit-check done"><i class="ti ti-check"></i></div>
+      <p class="habit-name">Morning run</p>
+      <div class="habit-actions"><span class="s3">🔥 12</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Meditate</p>
+      <div class="habit-actions"><span class="s2">2</span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+    <div class="habit-card">
+      <div class="habit-check"></div>
+      <p class="habit-name">Drink 2L of water</p>
+      <div class="habit-actions"><span class="s-empty"></span><i class="ti ti-edit icon"></i><i class="ti ti-trash icon"></i></div>
+    </div>
+  </div>
+
+</div>

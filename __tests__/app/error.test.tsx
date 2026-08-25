@@ -8,6 +8,20 @@ describe("Error boundary", () => {
   const error = new Error("Something went wrong");
 
   describe("given an error occurred", () => {
+    // ErrorPage logs the error via console.error as part of its real behaviour (see the test
+    // below that asserts on it) - every other test in this file triggers that same logging as
+    // a side effect just by rendering, so silence it here to keep the rest of the suite's
+    // output clean without losing the dedicated assertion on it.
+    let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
+
+    beforeEach(() => {
+      consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleErrorSpy.mockRestore();
+    });
+
     it("then shows a friendly message and a 'Try again' button", () => {
       render(<ErrorPage error={error} retry={jest.fn()} />);
 
@@ -18,13 +32,9 @@ describe("Error boundary", () => {
     });
 
     it("then logs the error for debugging", () => {
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
       render(<ErrorPage error={error} retry={jest.fn()} />);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
-
-      consoleErrorSpy.mockRestore();
     });
 
     describe("when the user clicks 'Try again'", () => {

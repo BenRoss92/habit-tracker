@@ -205,6 +205,13 @@ describe("AddHabitForm component", () => {
 
     if (!resolveRetry) throw new Error("resolver not ready");
     resolveRetry({});
+
+    // Let the retry resolve so the test doesn't leak a dangling act() warning - the retry
+    // succeeds, so wait for the same settled state the other success-path tests check.
+    await waitFor(() => {
+      expect(mockSetIsEditing).toHaveBeenCalledWith(false);
+      expect(screen.getByLabelText("Habit name")).toHaveValue("");
+    });
   });
 
   test("cancelling tells the parent to close the form, and clears the input and any error", async () => {
