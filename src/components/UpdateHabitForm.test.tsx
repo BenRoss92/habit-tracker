@@ -18,15 +18,15 @@ const habit: Habit = {
 };
 
 describe("UpdateHabitForm component", () => {
-  const mockSetIsUpdating = jest.fn();
+  const mockSetActiveAction = jest.fn();
 
   beforeEach(() => {
     mockedUpdateHabit.mockReset();
-    mockSetIsUpdating.mockReset();
+    mockSetActiveAction.mockReset();
   });
 
   test("pre-fills the input with the habit's current name", () => {
-    render(<UpdateHabitForm habit={habit} setIsUpdating={mockSetIsUpdating} />);
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
 
     expect(screen.getByLabelText("Edit habit name")).toHaveValue("Morning run");
   });
@@ -36,7 +36,7 @@ describe("UpdateHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<UpdateHabitForm habit={habit} setIsUpdating={mockSetIsUpdating} />);
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
 
     const inputField = screen.getByLabelText("Edit habit name");
     await user.clear(inputField);
@@ -49,17 +49,17 @@ describe("UpdateHabitForm component", () => {
 
     expect(inputField).toHaveValue("Evening run");
 
-    // Closing the form is the parent's job (via setIsUpdating) - on failure, UpdateHabitForm
+    // Closing the form is the parent's job (via setActiveAction) - on failure, UpdateHabitForm
     // never calls it, so the parent has no reason to stop rendering the form as open.
-    expect(mockSetIsUpdating).not.toHaveBeenCalled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
-  test("tells the parent to close the form after a successful submission", async () => {
+  test("tells the parent to clear the active action after a successful submission", async () => {
     mockedUpdateHabit.mockResolvedValue({});
 
     const user = userEvent.setup();
 
-    render(<UpdateHabitForm habit={habit} setIsUpdating={mockSetIsUpdating} />);
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
 
     const inputField = screen.getByLabelText("Edit habit name");
     await user.clear(inputField);
@@ -67,7 +67,7 @@ describe("UpdateHabitForm component", () => {
     await user.click(screen.getByText("Update"));
 
     await waitFor(() => {
-      expect(mockSetIsUpdating).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
     });
 
     expect(mockedUpdateHabit).toHaveBeenCalledWith(habit.id, "Evening run");
@@ -84,7 +84,7 @@ describe("UpdateHabitForm component", () => {
 
     const user = userEvent.setup();
 
-    render(<UpdateHabitForm habit={habit} setIsUpdating={mockSetIsUpdating} />);
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
 
     await user.click(screen.getByText("Update"));
 
@@ -100,14 +100,14 @@ describe("UpdateHabitForm component", () => {
     resolveUpdateHabit({});
 
     await waitFor(() => {
-      expect(mockSetIsUpdating).toHaveBeenCalledWith(false);
+      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
     });
   });
 
-  test("cancelling tells the parent to close the form, and resets the input back to the habit's current name", async () => {
+  test("cancelling tells the parent to clear the active action, and resets the input back to the habit's current name", async () => {
     const user = userEvent.setup();
 
-    render(<UpdateHabitForm habit={habit} setIsUpdating={mockSetIsUpdating} />);
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
 
     const inputField = screen.getByLabelText("Edit habit name");
     await user.clear(inputField);
@@ -115,7 +115,7 @@ describe("UpdateHabitForm component", () => {
 
     await user.click(screen.getByText("Cancel"));
 
-    expect(mockSetIsUpdating).toHaveBeenCalledWith(false);
+    expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
     expect(inputField).toHaveValue("Morning run");
     expect(mockedUpdateHabit).not.toHaveBeenCalled();
   });

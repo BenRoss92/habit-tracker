@@ -14,7 +14,7 @@ import { Habit } from "@/lib/types";
 describe("HabitList component", () => {
   describe("given there are no habits", () => {
     it("then shows 'No habits added'", () => {
-      render(<HabitList habits={[]} />);
+      render(<HabitList habits={[]} activeAction={{ type: "none" }} setActiveAction={jest.fn()} />);
 
       const placeholder = screen.getByText("No habits added");
 
@@ -32,7 +32,9 @@ describe("HabitList component", () => {
         { id: "2", name: "Read", created_at: "2026-08-17T11:07:09.855Z" },
       ];
 
-      render(<HabitList habits={habits} />);
+      render(
+        <HabitList habits={habits} activeAction={{ type: "none" }} setActiveAction={jest.fn()} />,
+      );
 
       const items = screen.getAllByRole("listitem");
 

@@ -1,7 +1,16 @@
-import { Habit } from "@/lib/types";
+import { ActiveAction, Habit } from "@/lib/types";
 import { HabitSection } from "./HabitSection";
+import { Dispatch, SetStateAction } from "react";
 
-export function HabitList({ habits }: { habits: Habit[] }) {
+export function HabitList({
+  habits,
+  activeAction,
+  setActiveAction,
+}: {
+  habits: Habit[];
+  activeAction: ActiveAction;
+  setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
+}) {
   return (
     <section>
       {
@@ -12,7 +21,12 @@ export function HabitList({ habits }: { habits: Habit[] }) {
         ) : (
           <ul className="space-y-2.5">
             {habits.map((habit) => (
-              <HabitSection key={habit.id} habit={habit} />
+              <HabitSection
+                key={habit.id}
+                habit={habit}
+                activeAction={activeAction}
+                setActiveAction={setActiveAction}
+              />
             ))}
           </ul>
         )
