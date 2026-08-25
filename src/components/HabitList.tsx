@@ -1,4 +1,5 @@
 import { Habit } from "@/lib/types";
+import { HabitSection } from "./HabitSection";
 
 export function HabitList({ habits }: { habits: Habit[] }) {
   return (
@@ -11,12 +12,7 @@ export function HabitList({ habits }: { habits: Habit[] }) {
         ) : (
           <ul className="space-y-2.5">
             {habits.map((habit) => (
-              <li
-                className="px-5 py-4 bg-white border-line rounded-[14px] border-[1.5px] font-semibold text-[17px] text-heading"
-                key={habit.id}
-              >
-                {habit.name}
-              </li>
+              <HabitSection key={habit.id} habit={habit} />
             ))}
           </ul>
         )

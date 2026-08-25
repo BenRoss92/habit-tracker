@@ -1,4 +1,13 @@
 import { render, screen } from "@testing-library/react";
+
+// HabitList now renders HabitSection per habit, which renders UpdateHabitForm when editing -
+// that pulls in the real updateHabit server action, which pulls in Next.js server code
+// (expecting globals like Request/TextEncoder that jsdom doesn't provide). Mock the action
+// before importing the component so that module graph never gets loaded.
+jest.mock("@/app/actions", () => ({
+  updateHabit: jest.fn(),
+}));
+
 import { HabitList } from "./HabitList";
 import { Habit } from "@/lib/types";
 

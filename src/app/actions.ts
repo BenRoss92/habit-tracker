@@ -6,11 +6,20 @@ import { z } from "zod";
 
 const MAX_CHARACTERS = 75;
 
-const habitSchema = z
+const createHabitSchema = z
   .string()
   .trim()
   .min(1, "Habit name cannot be empty")
   .max(MAX_CHARACTERS, `Habit name must be ${MAX_CHARACTERS} characters or less`);
+
+const updateHabitSchema = z.object({
+  id: z.uuid("Invalid ID format"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Habit name cannot be empty")
+    .max(MAX_CHARACTERS, `Habit name must be ${MAX_CHARACTERS} characters or less`),
+});
 
 export interface State {
   message?: string;
@@ -27,7 +36,7 @@ export async function createHabit(habitName: string): Promise<State> {
   const supabase = createServerClient();
 
   // Validate whether the string is defined and not empty
-  const validated = habitSchema.safeParse(habitName);
+  const validated = createHabitSchema.safeParse(habitName);
 
   // If habit name is not provided
   if (!validated.success) {
@@ -63,5 +72,44 @@ export async function createHabit(habitName: string): Promise<State> {
   // Explicitly return an empty object with no error message inside of it to remove the need for
   // having to check a nullable value first before checking whether an error message exists inside
   // of the object.
+  return {};
+}
+
+export async function updateHabit(habitId: string, habitName: string): Promise<State> {
+  const supabase = createServerClient();
+
+  const validated = updateHabitSchema.safeParse({ id: habitId, name: habitName });
+
+  if (!validated.success) {
+    return {
+      // Even though we're validating both the habit ID and habit name, the user can only enter a
+      // habit name through the UI, not the habit ID. So likely the only error message that will
+      // get seen, and the only one that a user would care about, is if the habit name was invalid.
+      message: validated.error.issues[0].message,
+    };
+  }
+
+  const { name, id } = validated.data;
+
+  try {
+    const { error } = await supabase.from("habits").update({ name: name }).eq("id", id);
+
+    if (error) {
+      console.error("Database error: Failed to update habit", error);
+
+      return {
+        message: "Database error: Failed to update habit",
+      };
+    }
+  } catch (error) {
+    console.error("Database error: An unexpected error occurred", error);
+
+    return {
+      message: "Database error: An unexpected error occurred",
+    };
+  }
+
+  revalidatePath("/");
+
   return {};
 }
