@@ -5,10 +5,11 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
 import { tv } from "tailwind-variants";
 import { ActiveAction } from "@/lib/types";
+import { getFormState } from "@/lib/form-state";
 
 const addHabitForm = tv({
   slots: {
-    form: "flex flex-col rounded-[14px] px-4 py-5 mb-2.5 items-start tracking-[0.06em] border-[1.5px]",
+    form: "flex flex-col rounded-[14px] px-5 py-4 mb-2.5 items-start border-[1.5px]",
     input:
       "rounded-[10px] w-full py-[9px] px-3 text-[15px] font-medium border-[1.5px] outline-none focus:border-brand disabled:cursor-not-allowed",
     submitButton:
@@ -31,7 +32,7 @@ const addHabitForm = tv({
       },
       pending: {
         form: "border-brand bg-white opacity-60",
-        input: "border-line bg-input-bg-disabled text-input-text-disabled",
+        input: "border-line bg-input-bg-disabled text-line",
         submitButton: "bg-line cursor-not-allowed",
         cancelButton: "border-line text-line cursor-not-allowed",
       },
@@ -51,16 +52,7 @@ export function AddHabitForm({
   const [error, setError] = useState<string | undefined>();
   const [isPending, setIsPending] = useState(false);
 
-  type FormState = "pending" | "error" | "idle";
-
-  let formState: FormState = "idle";
-
-  if (isPending) {
-    formState = "pending";
-  } else if (error) {
-    formState = "error";
-  }
-
+  const formState = getFormState(isPending, error);
   const { form, input, submitButton, cancelButton } = addHabitForm({ state: formState });
 
   function updateHabitName(e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>): void {
@@ -105,7 +97,7 @@ export function AddHabitForm({
       as it serves both screen readers 
       and non-screen reader users - good for accessibility */}
         <label
-          className=" mb-1.5 text-xs font-bold text-heading uppercase"
+          className=" mb-1.5 text-xs font-bold text-heading uppercase tracking-[0.06em]"
           htmlFor="add-habit-name"
         >
           Habit name
@@ -118,7 +110,7 @@ export function AddHabitForm({
           id="add-habit-name"
           disabled={isPending}
           // Ties the input to its error message for screen readers.
-          // When an error isn't in the DOM, don't add the arai-describedby attribute, otherwise it
+          // When an error isn't in the DOM, don't add the aria-describedby attribute, otherwise it
           // will confused screen readers (recommended approach) as the input will reference an
           // error element that doesn't exist in the DOM .
           aria-describedby={error ? "add-habit-name-error" : undefined}

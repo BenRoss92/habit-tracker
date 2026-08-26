@@ -5,16 +5,19 @@ jest.mock("next/cache", () => ({
 const mockInsert = jest.fn();
 const mockEq = jest.fn();
 const mockUpdate = jest.fn(() => ({ eq: mockEq }));
+const mockDeleteEq = jest.fn();
+const mockDelete = jest.fn(() => ({ eq: mockDeleteEq }));
 
 jest.mock("@/lib/supabase/server", () => ({
   createServerClient: jest.fn(() => ({
     from: jest.fn().mockReturnThis(),
     insert: mockInsert,
     update: mockUpdate,
+    delete: mockDelete,
   })),
 }));
 
-import { createHabit, updateHabit } from "@/app/actions";
+import { createHabit, updateHabit, deleteHabit } from "@/app/actions";
 import { revalidatePath } from "next/cache";
 
 const validId = "bc19277c-46a3-4d8d-b824-bc9c0e74abbd";
@@ -216,6 +219,73 @@ describe("Server actions", () => {
       mockEq.mockRejectedValueOnce(unexpectedDbError);
 
       const result = await updateHabit(validId, "Wash clothes");
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: An unexpected error occurred",
+        unexpectedDbError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: An unexpected error occurred" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe("deleteHabit", () => {
+    test("should return an empty object on a valid id and successful database deletion", async () => {
+      mockDeleteEq.mockResolvedValueOnce({ data: null, error: null });
+
+      const result = await deleteHabit(validId);
+
+      expect(mockDelete).toHaveBeenCalledTimes(1);
+      expect(mockDeleteEq).toHaveBeenCalledWith("id", validId);
+
+      expect(revalidatePath).toHaveBeenCalledTimes(1);
+      expect(revalidatePath).toHaveBeenCalledWith("/");
+
+      expect(result).toStrictEqual({});
+    });
+
+    test("should return a validation error and not touch the database when the habit ID is invalid", async () => {
+      const result = await deleteHabit("not-a-valid-uuid");
+
+      expect(result).toStrictEqual({ message: "Invalid ID format" });
+
+      expect(mockDelete).not.toHaveBeenCalled();
+      expect(revalidatePath).not.toHaveBeenCalled();
+    });
+
+    test("should return a database error message when the delete query itself returns an error", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const queryError = { message: "foreign key violation" };
+      mockDeleteEq.mockResolvedValueOnce({ data: null, error: queryError });
+
+      const result = await deleteHabit(validId);
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: Failed to delete habit",
+        queryError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: Failed to delete habit" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test("should return an unexpected error message on unexpected database issue", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const unexpectedDbError = new Error("connectivity error");
+      mockDeleteEq.mockRejectedValueOnce(unexpectedDbError);
+
+      const result = await deleteHabit(validId);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
