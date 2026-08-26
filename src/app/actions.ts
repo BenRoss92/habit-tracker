@@ -4,25 +4,61 @@ import { createServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+export type State = {
+  message?: string;
+};
+
 const MAX_CHARACTERS = 75;
 
-const createHabitSchema = z
+const habitNameSchema = z
   .string()
   .trim()
   .min(1, "Habit name cannot be empty")
   .max(MAX_CHARACTERS, `Habit name must be ${MAX_CHARACTERS} characters or less`);
 
+const habitIdSchema = z.uuid("Invalid ID format");
+
+const createHabitSchema = habitNameSchema;
+
 const updateHabitSchema = z.object({
-  id: z.uuid("Invalid ID format"),
-  name: z
-    .string()
-    .trim()
-    .min(1, "Habit name cannot be empty")
-    .max(MAX_CHARACTERS, `Habit name must be ${MAX_CHARACTERS} characters or less`),
+  id: habitIdSchema,
+  name: habitNameSchema,
 });
 
-export interface State {
-  message?: string;
+const deleteHabitSchema = habitIdSchema;
+
+// Shared by every mutation below: run the Supabase query, log and report a DB error the same
+// way regardless of which operation failed, and only revalidate on real success. Extracted once
+// create/update/delete all ended up with identical try/catch/error-message shapes, differing
+// only in the query itself and the verb in the error message.
+async function runHabitMutation(
+  // TypeScript compiler complains if we use 'Promise' type, need to use PromiseLike type instead
+  // which is less strict. The return type from Supabase doesn't match 'Promise', only
+  // 'PromiseLike', as it's missing certain properties in the returned promise that the TypeScript
+  // compiler would expect from a native Promise type. Supabase doesn't return a native Promise
+  // type, only something that can be used like a Promise.
+  operation: () => PromiseLike<{ error: unknown }>,
+  actionVerb: string,
+): Promise<State> {
+  try {
+    const { error } = await operation();
+
+    if (error) {
+      console.error(`Database error: Failed to ${actionVerb} habit`, error);
+      return {
+        message: `Database error: Failed to ${actionVerb} habit`,
+      };
+    }
+  } catch (error) {
+    console.error("Database error: An unexpected error occurred", error);
+    return {
+      message: "Database error: An unexpected error occurred",
+    };
+  }
+
+  revalidatePath("/");
+
+  return {};
 }
 
 // Always explicitly return a value. If successful, return an empty object. If unsuccessful, return
@@ -49,30 +85,10 @@ export async function createHabit(habitName: string): Promise<State> {
   // Get the sanitised habit name
   const validatedHabitName = validated.data;
 
-  // Wrap in a try/catch in case there's a network error
-  try {
-    const { error } = await supabase.from("habits").insert({ name: validatedHabitName });
-
-    if (error) {
-      console.error("Database error: Failed to save habit", error);
-      return {
-        message: "Database error: Failed to save habit",
-      };
-    }
-  } catch (error) {
-    console.error("Database error: An unexpected error occurred", error);
-    return {
-      message: "Database error: An unexpected error occurred",
-    };
-  }
-
-  // Revalidate the cache for the homepage to have Next.js return the latest list of habits
-  revalidatePath("/");
-
-  // Explicitly return an empty object with no error message inside of it to remove the need for
-  // having to check a nullable value first before checking whether an error message exists inside
-  // of the object.
-  return {};
+  return runHabitMutation(
+    () => supabase.from("habits").insert({ name: validatedHabitName }),
+    "save",
+  );
 }
 
 export async function updateHabit(habitId: string, habitName: string): Promise<State> {
@@ -91,25 +107,24 @@ export async function updateHabit(habitId: string, habitName: string): Promise<S
 
   const { name, id } = validated.data;
 
-  try {
-    const { error } = await supabase.from("habits").update({ name: name }).eq("id", id);
+  return runHabitMutation(
+    () => supabase.from("habits").update({ name: name }).eq("id", id),
+    "update",
+  );
+}
 
-    if (error) {
-      console.error("Database error: Failed to update habit", error);
+export async function deleteHabit(habitId: string): Promise<State> {
+  const supabase = createServerClient();
 
-      return {
-        message: "Database error: Failed to update habit",
-      };
-    }
-  } catch (error) {
-    console.error("Database error: An unexpected error occurred", error);
+  const validated = deleteHabitSchema.safeParse(habitId);
 
+  if (!validated.success) {
     return {
-      message: "Database error: An unexpected error occurred",
+      message: validated.error.issues[0].message,
     };
   }
 
-  revalidatePath("/");
+  const validatedId = validated.data;
 
-  return {};
+  return runHabitMutation(() => supabase.from("habits").delete().eq("id", validatedId), "delete");
 }

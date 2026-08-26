@@ -8,7 +8,7 @@ A habit tracking web app for building and maintaining daily habits, tracking str
 
 Development approach (from README.md): built using TDD (tests written before implementation) and BDD-style component tests (describing behavior from the user's perspective, not implementation details), delivered as vertical slices — each feature cut through the full stack (UI → business logic → database) so it's immediately usable, rather than built layer-by-layer.
 
-**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches habits and renders `HabitsSection` (the stateful orchestrating component - `AddHabitButton`, `AddHabitForm`, `HabitList`), with `error.tsx`/`loading.tsx` boundaries. Habit creation exists and is styled to match the design (`AddHabitForm` via `tailwind-variants`). Habit editing/deletion and streaks don't exist yet.
+**Current state:** Supabase and Jest/RTL are set up. `src/app/page.tsx` fetches habits and renders `HabitsSection` (the stateful orchestrating component - `AddHabitButton`, `AddHabitForm`, `HabitList`), with `error.tsx`/`loading.tsx` boundaries. Habit creation, editing, and deletion all exist and are styled to match the design (`AddHabitForm`/`UpdateHabitForm`/`DeleteHabitForm` via `tailwind-variants`), with only one of the three ever allowed to be open across the whole habits section at once - see `docs/decisions.md`'s "Only one add/edit/delete action open at a time." Streaks don't exist yet.
 
 ## Commands
 

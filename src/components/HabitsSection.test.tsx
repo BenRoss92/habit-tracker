@@ -9,6 +9,7 @@ import userEvent from "@testing-library/user-event";
 jest.mock("@/app/actions", () => ({
   createHabit: jest.fn(),
   updateHabit: jest.fn(),
+  deleteHabit: jest.fn(),
 }));
 
 import { HabitsSection } from "@/components/HabitsSection";
@@ -83,6 +84,33 @@ describe("HabitsSection component", () => {
         await user.click(screen.getByText("Cancel"));
 
         expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
+      });
+    });
+  });
+
+  describe("when the user clicks a habit's delete icon", () => {
+    it("then opens the delete confirmation and disables the 'Add habit' button", async () => {
+      const user = userEvent.setup();
+
+      render(<HabitsSection habits={habits} />);
+
+      await user.click(screen.getByRole("button", { name: "Delete habit" }));
+
+      expect(screen.getByText("Delete this habit?")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /add habit/i })).toBeDisabled();
+    });
+
+    describe("when the user clicks Cancel on the delete confirmation", () => {
+      it("then re-enables the 'Add habit' button", async () => {
+        const user = userEvent.setup();
+
+        render(<HabitsSection habits={habits} />);
+
+        await user.click(screen.getByRole("button", { name: "Delete habit" }));
+        await user.click(screen.getByText("Cancel"));
+
+        expect(screen.queryByText("Delete this habit?")).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
       });
     });
