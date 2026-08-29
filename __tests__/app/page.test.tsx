@@ -5,21 +5,39 @@ import { render, screen } from "@testing-library/react";
 // Request).
 jest.mock("@/lib/data", () => ({
   fetchHabits: jest.fn(),
+  fetchCompletions: jest.fn(),
 }));
 
-// Also mock the server action for creating a habit so importing `Habits`/`Page` doesn't load
-// Next server code that expects Node web globals like `Request`.
+// Also mock the server actions so importing `Habits`/`Page` (which pulls in HabitsSection ->
+// HabitList -> HabitSection -> HabitItem/UpdateHabitForm/DeleteHabitForm) doesn't load Next
+// server code that expects Node web globals like `Request`.
 jest.mock("@/app/actions", () => ({
   createHabit: jest.fn().mockResolvedValue(undefined),
+  updateHabit: jest.fn(),
+  deleteHabit: jest.fn(),
+  toggleCompletion: jest.fn(),
+}));
+
+// HabitList computes wasDoneToday from the real system date - mock it to a fixed value so the
+// "completion dated today" test below doesn't silently start failing on a future date.
+jest.mock("@/lib/dates", () => ({
+  getTodaysDate: jest.fn(() => "2026-08-27"),
 }));
 
 import Page from "@/app/page";
-import { fetchHabits } from "@/lib/data";
+import { fetchCompletions, fetchHabits } from "@/lib/data";
 import { Habit } from "@/lib/types";
 
 const fetchHabitsMock = jest.mocked(fetchHabits);
+const fetchCompletionsMock = jest.mocked(fetchCompletions);
 
 describe("Home page", () => {
+  beforeEach(() => {
+    // Most tests here don't care about completions - default to an empty array so each test only
+    // needs to stub it when the completion data actually matters.
+    fetchCompletionsMock.mockResolvedValue([]);
+  });
+
   describe("given there are no habits", () => {
     it("then shows the message 'No habits added'", async () => {
       // Need to await the imported Page server component. Server components are async and return a
@@ -104,6 +122,32 @@ describe("Home page", () => {
 
       expect(notice).not.toBeInTheDocument();
     });
+
+    it("then shows a habit with a completion dated today as done", async () => {
+      const habitId = "bc19277c-46a3-4d8d-b824-bc9c0e74abbd";
+      const habits: Habit[] = [
+        {
+          created_at: "2026-08-17T11:06:09.855Z",
+          id: habitId,
+          name: "Meditate",
+        },
+      ];
+
+      fetchHabitsMock.mockResolvedValueOnce(habits);
+      fetchCompletionsMock.mockResolvedValueOnce([
+        {
+          id: "c1",
+          habit_id: habitId,
+          completed_on: "2026-08-27",
+          created_at: "2026-08-27T09:00:00.000Z",
+        },
+      ]);
+
+      const page = await Page();
+      render(page);
+
+      expect(screen.getByRole("button", { name: "Mark habit as not done" })).toBeInTheDocument();
+    });
   });
 
   describe("given fetching habits fails", () => {
@@ -116,6 +160,17 @@ describe("Home page", () => {
       fetchHabitsMock.mockRejectedValueOnce(new Error("Failed to fetch habits"));
 
       await expect(Page()).rejects.toThrow("Failed to fetch habits");
+    });
+  });
+
+  describe("given fetching completions fails", () => {
+    it("then propagates the error instead of handling it", async () => {
+      fetchHabitsMock.mockResolvedValueOnce([]);
+      fetchCompletionsMock.mockRejectedValueOnce(
+        new Error("Failed to fetch habit completion data"),
+      );
+
+      await expect(Page()).rejects.toThrow("Failed to fetch habit completion data");
     });
   });
 });

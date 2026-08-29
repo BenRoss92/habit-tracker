@@ -27,6 +27,12 @@ const updateHabitSchema = z.object({
 
 const deleteHabitSchema = habitIdSchema;
 
+const toggleCompletionSchema = z.object({
+  id: habitIdSchema,
+  date: z.iso.date("Invalid date format"),
+  shouldMarkDone: z.boolean("Invalid format for whether the habit should be marked done"),
+});
+
 // Shared by every mutation below: run the Supabase query, log and report a DB error the same
 // way regardless of which operation failed, and only revalidate on real success. Extracted once
 // create/update/delete all ended up with identical try/catch/error-message shapes, differing
@@ -127,4 +133,38 @@ export async function deleteHabit(habitId: string): Promise<State> {
   const validatedId = validated.data;
 
   return runHabitMutation(() => supabase.from("habits").delete().eq("id", validatedId), "delete");
+}
+
+export async function toggleCompletion(
+  habitId: string,
+  completedOn: string,
+  shouldMarkDone: boolean,
+): Promise<State> {
+  const supabase = createServerClient();
+
+  const validated = toggleCompletionSchema.safeParse({
+    id: habitId,
+    date: completedOn,
+    shouldMarkDone: shouldMarkDone,
+  });
+
+  if (!validated.success) {
+    return {
+      message: validated.error.issues[0]?.message,
+    };
+  }
+
+  const { id, date, shouldMarkDone: markDone } = validated.data;
+
+  if (markDone) {
+    return runHabitMutation(
+      () => supabase.from("completions").insert({ habit_id: id, completed_on: date }),
+      "complete",
+    );
+  }
+
+  return runHabitMutation(
+    () => supabase.from("completions").delete().eq("habit_id", id).eq("completed_on", date),
+    "uncomplete",
+  );
 }

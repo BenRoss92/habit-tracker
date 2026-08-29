@@ -52,6 +52,20 @@ describe("DeleteHabitForm component", () => {
     expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
+  test("shows a fallback error and re-enables the form if deleteHabit itself rejects", async () => {
+    mockedDeleteHabit.mockRejectedValueOnce(new Error("Network request failed"));
+
+    const user = userEvent.setup();
+
+    render(<DeleteHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
+
+    await user.click(screen.getByText("Delete"));
+
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    expect(screen.getByText("Delete")).toBeEnabled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
+  });
+
   test("tells the parent to clear the active action after a successful deletion", async () => {
     mockedDeleteHabit.mockResolvedValue({});
 

@@ -10,6 +10,11 @@ jest.mock("@/app/actions", () => ({
   createHabit: jest.fn(),
   updateHabit: jest.fn(),
   deleteHabit: jest.fn(),
+  toggleCompletion: jest.fn(),
+}));
+
+jest.mock("@/lib/dates", () => ({
+  getTodaysDate: jest.fn(() => "2026-08-27"),
 }));
 
 import { HabitsSection } from "@/components/HabitsSection";
@@ -27,7 +32,7 @@ describe("HabitsSection component", () => {
 
   describe("given the section has just loaded", () => {
     it("then shows an enabled 'Add habit' button, no open form, and the given habits", () => {
-      render(<HabitsSection habits={habits} />);
+      render(<HabitsSection habits={habits} completions={[]} />);
 
       expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
       expect(screen.queryByLabelText("Habit name")).not.toBeInTheDocument();
@@ -39,7 +44,7 @@ describe("HabitsSection component", () => {
     it("then opens the form and disables the button", async () => {
       const user = userEvent.setup();
 
-      render(<HabitsSection habits={habits} />);
+      render(<HabitsSection habits={habits} completions={[]} />);
 
       await user.click(screen.getByRole("button", { name: /add habit/i }));
 
@@ -54,7 +59,7 @@ describe("HabitsSection component", () => {
       // disables a habit row's edit icon, not just the Add button itself.
       const user = userEvent.setup();
 
-      render(<HabitsSection habits={habits} />);
+      render(<HabitsSection habits={habits} completions={[]} />);
 
       await user.click(screen.getByRole("button", { name: /add habit/i }));
 
@@ -66,7 +71,7 @@ describe("HabitsSection component", () => {
     it("then opens that habit's update form and disables the 'Add habit' button", async () => {
       const user = userEvent.setup();
 
-      render(<HabitsSection habits={habits} />);
+      render(<HabitsSection habits={habits} completions={[]} />);
 
       await user.click(screen.getByRole("button", { name: "Edit habit" }));
 
@@ -78,7 +83,7 @@ describe("HabitsSection component", () => {
       it("then re-enables the 'Add habit' button", async () => {
         const user = userEvent.setup();
 
-        render(<HabitsSection habits={habits} />);
+        render(<HabitsSection habits={habits} completions={[]} />);
 
         await user.click(screen.getByRole("button", { name: "Edit habit" }));
         await user.click(screen.getByText("Cancel"));
@@ -93,7 +98,7 @@ describe("HabitsSection component", () => {
     it("then opens the delete confirmation and disables the 'Add habit' button", async () => {
       const user = userEvent.setup();
 
-      render(<HabitsSection habits={habits} />);
+      render(<HabitsSection habits={habits} completions={[]} />);
 
       await user.click(screen.getByRole("button", { name: "Delete habit" }));
 
@@ -105,7 +110,7 @@ describe("HabitsSection component", () => {
       it("then re-enables the 'Add habit' button", async () => {
         const user = userEvent.setup();
 
-        render(<HabitsSection habits={habits} />);
+        render(<HabitsSection habits={habits} completions={[]} />);
 
         await user.click(screen.getByRole("button", { name: "Delete habit" }));
         await user.click(screen.getByText("Cancel"));
@@ -126,7 +131,7 @@ describe("HabitsSection component", () => {
         // AddHabitButton.
         const user = userEvent.setup();
 
-        render(<HabitsSection habits={habits} />);
+        render(<HabitsSection habits={habits} completions={[]} />);
 
         await user.click(screen.getByRole("button", { name: /add habit/i }));
         await user.click(screen.getByText("Cancel"));
@@ -144,7 +149,7 @@ describe("HabitsSection component", () => {
 
         const user = userEvent.setup();
 
-        render(<HabitsSection habits={habits} />);
+        render(<HabitsSection habits={habits} completions={[]} />);
 
         await user.click(screen.getByRole("button", { name: /add habit/i }));
         await user.type(screen.getByLabelText("Habit name"), "Read");
@@ -155,6 +160,23 @@ describe("HabitsSection component", () => {
         });
         expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
       });
+    });
+  });
+
+  describe("given a habit has a completion dated today", () => {
+    it("then shows that habit's toggle as done", () => {
+      const completions = [
+        {
+          id: "c1",
+          habit_id: "1",
+          completed_on: "2026-08-27",
+          created_at: "2026-08-27T09:00:00.000Z",
+        },
+      ];
+
+      render(<HabitsSection habits={habits} completions={completions} />);
+
+      expect(screen.getByRole("button", { name: "Mark habit as not done" })).toBeInTheDocument();
     });
   });
 });

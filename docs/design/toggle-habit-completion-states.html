@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Tracker — Toggle Completion States</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #f0f4f8;
+        font-family: "Nunito", sans-serif;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+      .page {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .group-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a3a5c;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #b8d4f0;
+      }
+      .intro {
+        font-size: 13px;
+        color: #4a7ab5;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+      .state-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #7aaad4;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.6rem;
+      }
+      .hw {
+        padding: 1.25rem 1.5rem;
+        background: #ebf4ff;
+        border-radius: 16px;
+        margin-bottom: 2.5rem;
+      }
+      .hw-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+      }
+      .hw-date {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a3a5c;
+      }
+      .section-lbl {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a3a5c;
+        margin-bottom: 0.75rem;
+      }
+      .add-btn {
+        font-size: 14px;
+        font-weight: 700;
+        padding: 9px 20px;
+        border: 2px solid #1a6bbf;
+        border-radius: 20px;
+        background: #ffffff;
+        color: #1a6bbf;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Nunito", sans-serif;
+      }
+
+      .habit-card {
+        background: #ffffff;
+        border: 1.5px solid #b8d4f0;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .habit-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      /* Toggle circle - base + state variants */
+      .habit-check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid #1a6bbf;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #ffffff;
+      }
+      .habit-check.done {
+        background: #1a6bbf;
+        border-color: #1a6bbf;
+      }
+      .habit-check.pending {
+        border-color: #b8d4f0;
+        cursor: not-allowed;
+      }
+      .habit-check.error {
+        border-color: #d93025;
+      }
+
+      .check-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(26, 107, 191, 0.2);
+        border-top-color: #1a6bbf;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .habit-name {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1a3a5c;
+      }
+      .habit-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-left: auto;
+      }
+      .icon {
+        font-size: 17px;
+        color: #7aaad4;
+      }
+      .s3 {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 5px 13px;
+        border-radius: 20px;
+        background: #1a6bbf;
+        color: #ffffff;
+        border: 2px solid #1a55a0;
+        white-space: nowrap;
+      }
+      .s2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 5px 13px;
+        border-radius: 20px;
+        background: #93c5e8;
+        color: #0e3d6e;
+        border: 2px solid #5aaad4;
+        white-space: nowrap;
+      }
+      .s-empty {
+        background: transparent;
+        border: 2px solid #b8d4f0;
+        padding: 5px 13px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        width: 44px;
+        height: 34px;
+      }
+
+      .err-msg {
+        font-size: 12px;
+        font-weight: 600;
+        color: #d93025;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        /* Aligns under the toggle circle, not the habit name - the circle is what actually failed */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="group-title">✓ Toggling a habit's completion</div>
+      <p class="intro">
+        The circle at the left of each habit is a toggle, not a form - clicking it doesn't open
+        anything else on screen. Because the update is non-optimistic, the circle's own filled/empty
+        state never changes until the request actually succeeds - pending and error states both show
+        the circle exactly as it was before the click, with a different border/content layered on
+        top to signal what's happening.
+      </p>
+
+      <p class="state-label">Idle - not done today</p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <div class="add-btn">+ Add habit</div>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="habit-card">
+          <div class="habit-row">
+            <div class="habit-check"></div>
+            <p class="habit-name">Meditate</p>
+            <div class="habit-actions">
+              <span class="s2">2</span><i class="ti ti-edit icon"></i
+              ><i class="ti ti-trash icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="state-label">Idle - done today</p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <div class="add-btn">+ Add habit</div>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="habit-card">
+          <div class="habit-row">
+            <div class="habit-check done"><i class="ti ti-check"></i></div>
+            <p class="habit-name">Morning run</p>
+            <div class="habit-actions">
+              <span class="s3">🔥 12</span><i class="ti ti-edit icon"></i
+              ><i class="ti ti-trash icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="state-label">
+        Pending - request in flight (same treatment marking done or un-marking; shown here mid-click
+        on an undone habit)
+      </p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <div class="add-btn">+ Add habit</div>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="habit-card">
+          <div class="habit-row">
+            <div class="habit-check pending"><div class="check-spinner"></div></div>
+            <p class="habit-name">Meditate</p>
+            <div class="habit-actions">
+              <span class="s2">2</span><i class="ti ti-edit icon"></i
+              ><i class="ti ti-trash icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="state-label">
+        Error - the request failed, nothing changed (message shown is whatever the server actually
+        returns, same as every other form in this app - not custom client-side wording)
+      </p>
+      <div class="hw">
+        <div class="hw-header">
+          <p class="hw-date">Sunday, 6 Jul</p>
+          <div class="add-btn">+ Add habit</div>
+        </div>
+        <p class="section-lbl">Habits</p>
+        <div class="habit-card">
+          <div class="habit-row">
+            <div class="habit-check error"></div>
+            <p class="habit-name">Meditate</p>
+            <div class="habit-actions">
+              <span class="s2">2</span><i class="ti ti-edit icon"></i
+              ><i class="ti ti-trash icon"></i>
+            </div>
+          </div>
+          <p class="err-msg">
+            <i class="ti ti-alert-circle" style="font-size: 12px"></i> Database error: Failed to
+            complete habit
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

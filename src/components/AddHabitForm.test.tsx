@@ -76,6 +76,27 @@ describe("AddHabitForm component", () => {
     expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
+  test("shows a fallback error and re-enables the form if createHabit itself rejects", async () => {
+    // Distinct from the "returns { message }" case above - this is createHabit's own network
+    // round trip failing outright (e.g. a dropped connection), which createHabit never actually
+    // does in practice (see runHabitMutation's try/catch in actions.ts), but the form still
+    // guards against it so a failure here can't leave the button stuck on "Adding..." forever.
+    mockedCreateHabit.mockRejectedValueOnce(new Error("Network request failed"));
+
+    const user = userEvent.setup();
+
+    render(
+      <AddHabitForm activeAction={{ type: "adding" }} setActiveAction={mockSetActiveAction} />,
+    );
+
+    await user.type(screen.getByLabelText("Habit name"), "Meditate");
+    await user.click(screen.getByText("Add"));
+
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    expect(screen.getByText("Add")).toBeEnabled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
+  });
+
   test("tells the parent to close the form after a successful submission, and clears the input", async () => {
     mockedCreateHabit.mockResolvedValue({});
 

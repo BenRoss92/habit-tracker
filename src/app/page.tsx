@@ -1,4 +1,4 @@
-import { fetchHabits } from "@/lib/data";
+import { fetchCompletions, fetchHabits } from "@/lib/data";
 import { HabitsSection } from "@/components/HabitsSection";
 
 // Always render fresh - never cache this page's HTML. See docs/decisions.md
@@ -13,6 +13,7 @@ export default async function Home() {
   // instead of async. It is suggested to not use useEffect and a fetch, and to instead have the
   // server do server-side rendering. Fetch all of the habits from the database
   const habits = await fetchHabits();
+  const completions = await fetchCompletions();
 
-  return <HabitsSection habits={habits} />;
+  return <HabitsSection habits={habits} completions={completions} />;
 }

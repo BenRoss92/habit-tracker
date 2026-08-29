@@ -8,6 +8,11 @@ import userEvent from "@testing-library/user-event";
 jest.mock("@/app/actions", () => ({
   updateHabit: jest.fn(),
   deleteHabit: jest.fn(),
+  toggleCompletion: jest.fn(),
+}));
+
+jest.mock("@/lib/dates", () => ({
+  getTodaysDate: jest.fn(() => "2026-08-27"),
 }));
 
 import { HabitSection } from "@/components/HabitSection";
@@ -32,7 +37,12 @@ describe("HabitSection component", () => {
   describe("given nothing is active", () => {
     it("then shows the habit name, enabled edit/delete icons, and no open form", () => {
       render(
-        <HabitSection habit={habit} activeAction={{ type: "none" }} setActiveAction={jest.fn()} />,
+        <HabitSection
+          habit={habit}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          wasDoneToday={false}
+        />,
       );
 
       expect(screen.getByText("Morning run")).toBeInTheDocument();
@@ -40,6 +50,21 @@ describe("HabitSection component", () => {
       expect(screen.getByRole("button", { name: "Delete habit" })).toBeEnabled();
       expect(screen.queryByLabelText("Edit habit name")).not.toBeInTheDocument();
       expect(screen.queryByText("Delete this habit?")).not.toBeInTheDocument();
+    });
+
+    describe("and the habit was done today", () => {
+      it("then shows the toggle as done", () => {
+        render(
+          <HabitSection
+            habit={habit}
+            activeAction={{ type: "none" }}
+            setActiveAction={jest.fn()}
+            wasDoneToday={true}
+          />,
+        );
+
+        expect(screen.getByRole("button", { name: "Mark habit as not done" })).toBeInTheDocument();
+      });
     });
   });
 
@@ -50,6 +75,7 @@ describe("HabitSection component", () => {
           habit={habit}
           activeAction={{ type: "editing", habitId: "some-other-id" }}
           setActiveAction={jest.fn()}
+          wasDoneToday={false}
         />,
       );
 
@@ -67,6 +93,7 @@ describe("HabitSection component", () => {
           habit={habit}
           activeAction={{ type: "deleting", habitId: "some-other-id" }}
           setActiveAction={jest.fn()}
+          wasDoneToday={false}
         />,
       );
 
@@ -84,6 +111,7 @@ describe("HabitSection component", () => {
           habit={habit}
           activeAction={{ type: "deleting", habitId: habit.id }}
           setActiveAction={jest.fn()}
+          wasDoneToday={false}
         />,
       );
 
@@ -101,6 +129,7 @@ describe("HabitSection component", () => {
           habit={habit}
           activeAction={{ type: "editing", habitId: habit.id }}
           setActiveAction={jest.fn()}
+          wasDoneToday={false}
         />,
       );
 
@@ -121,6 +150,7 @@ describe("HabitSection component", () => {
             habit={habit}
             activeAction={{ type: "editing", habitId: habit.id }}
             setActiveAction={setActiveAction}
+            wasDoneToday={false}
           />,
         );
 
@@ -142,6 +172,7 @@ describe("HabitSection component", () => {
             habit={habit}
             activeAction={{ type: "editing", habitId: habit.id }}
             setActiveAction={setActiveAction}
+            wasDoneToday={false}
           />,
         );
 
@@ -167,6 +198,7 @@ describe("HabitSection component", () => {
             habit={habit}
             activeAction={{ type: "deleting", habitId: habit.id }}
             setActiveAction={setActiveAction}
+            wasDoneToday={false}
           />,
         );
 
@@ -188,6 +220,7 @@ describe("HabitSection component", () => {
             habit={habit}
             activeAction={{ type: "deleting", habitId: habit.id }}
             setActiveAction={setActiveAction}
+            wasDoneToday={false}
           />,
         );
 

@@ -71,17 +71,26 @@ export function UpdateHabitForm({
     setError(undefined);
     setIsPending(true);
 
-    const { message } = await updateHabit(habit.id, draftedName);
+    try {
+      const { message } = await updateHabit(habit.id, draftedName);
 
-    if (message) {
-      setError(message);
+      if (message) {
+        setError(message);
+        setIsPending(false);
+        return;
+      }
+
+      setActiveAction({ type: "none" });
+      setError(undefined);
       setIsPending(false);
-      return;
+    } catch {
+      // updateHabit itself always resolves with a { message } object rather than throwing - see
+      // runHabitMutation in actions.ts - but this guards against the Server Action's own network
+      // round trip failing outright (e.g. a dropped connection), which would otherwise leave the
+      // form stuck showing "Updating..." forever with no error ever shown.
+      setError("Something went wrong. Please try again.");
+      setIsPending(false);
     }
-
-    setActiveAction({ type: "none" });
-    setError(undefined);
-    setIsPending(false);
   }
 
   return (
