@@ -8,19 +8,31 @@ const mockUpdate = jest.fn(() => ({ eq: mockEq }));
 const mockDeleteEq = jest.fn();
 const mockDelete = jest.fn(() => ({ eq: mockDeleteEq }));
 
+// toggleCompletion's un-mark path chains two .eq() calls (.delete().eq("habit_id", ...).eq(
+// "completed_on", ...)), unlike deleteHabit's single .eq() - so the completions table needs its
+// own isolated mocks with their own chain shape, rather than reusing mockDelete/mockDeleteEq and
+// risking a shape mismatch that would also affect deleteHabit's passing tests.
+const mockCompletionInsert = jest.fn();
+const mockCompletionDeleteEq2 = jest.fn();
+const mockCompletionDeleteEq1 = jest.fn(() => ({ eq: mockCompletionDeleteEq2 }));
+const mockCompletionDelete = jest.fn(() => ({ eq: mockCompletionDeleteEq1 }));
+
 jest.mock("@/lib/supabase/server", () => ({
   createServerClient: jest.fn(() => ({
-    from: jest.fn().mockReturnThis(),
-    insert: mockInsert,
-    update: mockUpdate,
-    delete: mockDelete,
+    from: jest.fn((table: string) => {
+      if (table === "completions") {
+        return { insert: mockCompletionInsert, delete: mockCompletionDelete };
+      }
+      return { insert: mockInsert, update: mockUpdate, delete: mockDelete };
+    }),
   })),
 }));
 
-import { createHabit, updateHabit, deleteHabit } from "@/app/actions";
+import { createHabit, updateHabit, deleteHabit, toggleCompletion } from "@/app/actions";
 import { revalidatePath } from "next/cache";
 
 const validId = "bc19277c-46a3-4d8d-b824-bc9c0e74abbd";
+const validDate = "2026-08-27";
 
 describe("Server actions", () => {
   beforeEach(() => {
@@ -286,6 +298,144 @@ describe("Server actions", () => {
       mockDeleteEq.mockRejectedValueOnce(unexpectedDbError);
 
       const result = await deleteHabit(validId);
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: An unexpected error occurred",
+        unexpectedDbError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: An unexpected error occurred" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe("toggleCompletion", () => {
+    test("should return an empty object and insert a completion when marking a habit done", async () => {
+      mockCompletionInsert.mockResolvedValueOnce({ data: null, error: null });
+
+      const result = await toggleCompletion(validId, validDate, true);
+
+      expect(mockCompletionInsert).toHaveBeenCalledTimes(1);
+      expect(mockCompletionInsert).toHaveBeenCalledWith({
+        habit_id: validId,
+        completed_on: validDate,
+      });
+
+      expect(revalidatePath).toHaveBeenCalledTimes(1);
+      expect(revalidatePath).toHaveBeenCalledWith("/");
+
+      expect(result).toStrictEqual({});
+    });
+
+    test("should return an empty object and delete the matching completion when unmarking a habit done", async () => {
+      mockCompletionDeleteEq2.mockResolvedValueOnce({ data: null, error: null });
+
+      const result = await toggleCompletion(validId, validDate, false);
+
+      expect(mockCompletionDelete).toHaveBeenCalledTimes(1);
+      expect(mockCompletionDeleteEq1).toHaveBeenCalledWith("habit_id", validId);
+      expect(mockCompletionDeleteEq2).toHaveBeenCalledWith("completed_on", validDate);
+
+      expect(revalidatePath).toHaveBeenCalledTimes(1);
+      expect(revalidatePath).toHaveBeenCalledWith("/");
+
+      expect(result).toStrictEqual({});
+    });
+
+    test("should return a validation error and not touch the database when the habit ID is invalid", async () => {
+      const result = await toggleCompletion("not-a-valid-uuid", validDate, true);
+
+      expect(result).toStrictEqual({ message: "Invalid ID format" });
+
+      expect(mockCompletionInsert).not.toHaveBeenCalled();
+      expect(mockCompletionDelete).not.toHaveBeenCalled();
+      expect(revalidatePath).not.toHaveBeenCalled();
+    });
+
+    test("should return a validation error and not touch the database when the date format is invalid", async () => {
+      const result = await toggleCompletion(validId, "27-08-2026", true);
+
+      expect(result).toStrictEqual({ message: "Invalid date format" });
+
+      expect(mockCompletionInsert).not.toHaveBeenCalled();
+      expect(mockCompletionDelete).not.toHaveBeenCalled();
+      expect(revalidatePath).not.toHaveBeenCalled();
+    });
+
+    test("should return a database error message when the insert query returns an error", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const queryError = { message: "duplicate key value" };
+      mockCompletionInsert.mockResolvedValueOnce({ data: null, error: queryError });
+
+      const result = await toggleCompletion(validId, validDate, true);
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: Failed to complete habit",
+        queryError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: Failed to complete habit" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test("should return a database error message when the delete query returns an error", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const queryError = { message: "row not found" };
+      mockCompletionDeleteEq2.mockResolvedValueOnce({ data: null, error: queryError });
+
+      const result = await toggleCompletion(validId, validDate, false);
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: Failed to uncomplete habit",
+        queryError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: Failed to uncomplete habit" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test("should return an unexpected error message on unexpected database issue when marking a habit done", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const unexpectedDbError = new Error("connectivity error");
+      mockCompletionInsert.mockRejectedValueOnce(unexpectedDbError);
+
+      const result = await toggleCompletion(validId, validDate, true);
+
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Database error: An unexpected error occurred",
+        unexpectedDbError,
+      );
+
+      expect(result).toStrictEqual({ message: "Database error: An unexpected error occurred" });
+
+      expect(revalidatePath).not.toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test("should return an unexpected error message on unexpected database issue when unmarking a habit done", async () => {
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      const unexpectedDbError = new Error("connectivity error");
+      mockCompletionDeleteEq2.mockRejectedValueOnce(unexpectedDbError);
+
+      const result = await toggleCompletion(validId, validDate, false);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(

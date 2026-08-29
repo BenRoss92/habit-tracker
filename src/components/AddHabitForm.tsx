@@ -74,20 +74,30 @@ export function AddHabitForm({
     // error doesn't stay on screen while this new request is pending.
     setError(undefined);
     setIsPending(true);
-    const { message } = await createHabit(habitName);
 
-    if (message) {
-      setError(message);
+    try {
+      const { message } = await createHabit(habitName);
+
+      if (message) {
+        setError(message);
+        setIsPending(false);
+        // Don't do anything else if there's an error - just return
+        return;
+      }
+
+      // If there's no error, exit edit mode
+      setActiveAction({ type: "none" });
+      setHabitName("");
+      setError(undefined);
       setIsPending(false);
-      // Don't do anything else if there's an error - just return
-      return;
+    } catch {
+      // createHabit itself always resolves with a { message } object rather than throwing - see
+      // runHabitMutation in actions.ts - but this guards against the Server Action's own network
+      // round trip failing outright (e.g. a dropped connection), which would otherwise leave the
+      // form stuck showing "Adding..." forever with no error ever shown.
+      setError("Something went wrong. Please try again.");
+      setIsPending(false);
     }
-
-    // If there's no error, exit edit mode
-    setActiveAction({ type: "none" });
-    setHabitName("");
-    setError(undefined);
-    setIsPending(false);
   }
 
   return (

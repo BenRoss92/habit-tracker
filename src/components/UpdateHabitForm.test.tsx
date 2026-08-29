@@ -54,6 +54,20 @@ describe("UpdateHabitForm component", () => {
     expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
+  test("shows a fallback error and re-enables the form if updateHabit itself rejects", async () => {
+    mockedUpdateHabit.mockRejectedValueOnce(new Error("Network request failed"));
+
+    const user = userEvent.setup();
+
+    render(<UpdateHabitForm habit={habit} setActiveAction={mockSetActiveAction} />);
+
+    await user.click(screen.getByText("Update"));
+
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    expect(screen.getByText("Update")).toBeEnabled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
+  });
+
   test("tells the parent to clear the active action after a successful submission", async () => {
     mockedUpdateHabit.mockResolvedValue({});
 

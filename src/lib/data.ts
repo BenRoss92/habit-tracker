@@ -1,5 +1,5 @@
 import { createServerClient } from "./supabase/server";
-import { Habit } from "./types";
+import { Completion, Habit } from "./types";
 
 export async function fetchHabits(): Promise<Habit[]> {
   const supabase = createServerClient();
@@ -37,5 +37,22 @@ export async function fetchHabits(): Promise<Habit[]> {
   } catch (error) {
     console.error(error);
     throw new Error("Failed to fetch habits");
+  }
+}
+
+export async function fetchCompletions(): Promise<Completion[]> {
+  const supabase = createServerClient();
+
+  try {
+    const { data, error } = await supabase.from("completions").select();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch habit completion data");
   }
 }
