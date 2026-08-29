@@ -78,7 +78,7 @@ export async function createHabit(habitName: string): Promise<State> {
   if (!validated.success) {
     // Return a human readable error message to the user
     return {
-      message: validated.error.issues[0].message,
+      message: validated.error.issues[0]?.message,
     };
   }
 
@@ -101,7 +101,7 @@ export async function updateHabit(habitId: string, habitName: string): Promise<S
       // Even though we're validating both the habit ID and habit name, the user can only enter a
       // habit name through the UI, not the habit ID. So likely the only error message that will
       // get seen, and the only one that a user would care about, is if the habit name was invalid.
-      message: validated.error.issues[0].message,
+      message: validated.error.issues[0]?.message,
     };
   }
 
@@ -120,7 +120,7 @@ export async function deleteHabit(habitId: string): Promise<State> {
 
   if (!validated.success) {
     return {
-      message: validated.error.issues[0].message,
+      message: validated.error.issues[0]?.message,
     };
   }
 
