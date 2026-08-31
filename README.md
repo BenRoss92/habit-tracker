@@ -12,11 +12,30 @@ Built using Claude Code and the Context7 MCP server for up-to-date, version-spec
 
 ## Live demo
 
-_Coming soon_
+[habit-tracker-eta-gold.vercel.app](https://habit-tracker-eta-gold.vercel.app)
 
 ## How to run locally
 
-_Coming soon_
+Requires the following to be installed: Node 24 (see `.nvmrc`) and [pnpm](https://pnpm.io) (version pinned in `package.json`'s `packageManager` field - `corepack enable` will pick it up automatically).
+
+1. Clone the repo and install dependencies:
+   ```bash
+   git clone https://github.com/BenRoss92/habit-tracker.git
+   cd habit-tracker
+   pnpm install
+   ```
+2. Create a [Supabase](https://supabase.com) project for the database, then copy `.env.local.example` to `.env.local` and fill in your project's URL and publishable key (Project Settings → API):
+   ```bash
+   cp .env.local.example .env.local
+   ```
+3. Apply the database schema in `supabase/migrations/` to your Supabase project's database (via the SQL editor or the Supabase CLI).
+4. Start the dev server:
+   ```bash
+   pnpm dev
+   ```
+   The app runs at [localhost:3000](http://localhost:3000).
+
+Other useful commands: `pnpm test`, `pnpm lint`, `pnpm tsc --noEmit` (checking for compilation errors), `pnpm build`.
 
 ## Development approach
 
