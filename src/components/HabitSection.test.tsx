@@ -161,13 +161,17 @@ describe("HabitSection component", () => {
     });
 
     describe("when a habit update is submitted successfully", () => {
-      it("then tells the parent to clear the active action", async () => {
-        mockedUpdateHabit.mockResolvedValue({});
+      it("then only tells the parent to clear the active action once the fresh habit.name prop confirms the save", async () => {
+        // Real cross-component proof of the update-race fix, matching HabitList's cross-component
+        // proof for the analogous delete fix: the request resolving alone must not be enough to
+        // close the form, since the confirmed data (a fresh habit.name prop) arrives as a
+        // separate, later round trip.
+        mockedUpdateHabit.mockResolvedValueOnce({});
 
         const user = userEvent.setup();
         const setActiveAction = jest.fn();
 
-        render(
+        const { rerender } = render(
           <HabitSection
             habit={habit}
             activeAction={{ type: "editing", habitId: habit.id }}
@@ -179,6 +183,23 @@ describe("HabitSection component", () => {
         await user.clear(screen.getByLabelText("Edit habit name"));
         await user.type(screen.getByLabelText("Edit habit name"), "Evening run");
         await user.click(screen.getByText("Update"));
+
+        await waitFor(() => {
+          expect(mockedUpdateHabit).toHaveBeenCalledWith(habit.id, "Evening run");
+        });
+
+        // The request has resolved, but habit.name hasn't refreshed yet.
+        expect(setActiveAction).not.toHaveBeenCalled();
+
+        // Now the fresh data lands, confirming the save.
+        rerender(
+          <HabitSection
+            habit={{ ...habit, name: "Evening run" }}
+            activeAction={{ type: "editing", habitId: habit.id }}
+            setActiveAction={setActiveAction}
+            wasDoneToday={false}
+          />,
+        );
 
         await waitFor(() => {
           expect(setActiveAction).toHaveBeenCalledWith({ type: "none" });
@@ -209,7 +230,11 @@ describe("HabitSection component", () => {
     });
 
     describe("when the deletion is submitted successfully", () => {
-      it("then tells the parent to clear the active action", async () => {
+      it("then keeps showing the confirmation as still deleting, rather than clearing the active action itself", async () => {
+        // HabitSection alone (no HabitList above it here) can't confirm the habit is actually
+        // gone - only HabitList's useEffect, watching the full habits array, does that. See
+        // HabitList.test.tsx for the real cross-component proof that the active action does
+        // eventually clear once a fresh habits array confirms the deletion.
         mockedDeleteHabit.mockResolvedValue({});
 
         const user = userEvent.setup();
@@ -227,8 +252,11 @@ describe("HabitSection component", () => {
         await user.click(screen.getByText("Delete"));
 
         await waitFor(() => {
-          expect(setActiveAction).toHaveBeenCalledWith({ type: "none" });
+          expect(mockedDeleteHabit).toHaveBeenCalledWith(habit.id);
         });
+
+        expect(await screen.findByRole("button", { name: /deleting/i })).toBeDisabled();
+        expect(setActiveAction).not.toHaveBeenCalled();
       });
     });
   });

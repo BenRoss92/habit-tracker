@@ -66,7 +66,12 @@ describe("DeleteHabitForm component", () => {
     expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
-  test("tells the parent to clear the active action after a successful deletion", async () => {
+  test("on a successful deletion, keeps showing 'Deleting...' and never clears the active action itself", async () => {
+    // DeleteHabitForm deliberately never calls setActiveAction on success - that's HabitList's
+    // job (see its useEffect), which only fires once the fresh habits array actually confirms
+    // this habit is gone. Rendered standalone here (no HabitList above it), so this proves
+    // DeleteHabitForm's own half of the fix: it stays showing "Deleting..." rather than
+    // reverting to an idle/closed state on its own the instant the request resolves.
     mockedDeleteHabit.mockResolvedValue({});
 
     const user = userEvent.setup();
@@ -76,10 +81,11 @@ describe("DeleteHabitForm component", () => {
     await user.click(screen.getByText("Delete"));
 
     await waitFor(() => {
-      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
+      expect(mockedDeleteHabit).toHaveBeenCalledWith(habit.id);
     });
 
-    expect(mockedDeleteHabit).toHaveBeenCalledWith(habit.id);
+    expect(await screen.findByRole("button", { name: /deleting/i })).toBeDisabled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
   test("shows 'Deleting...' and disables both buttons while the request is pending", async () => {
@@ -105,12 +111,17 @@ describe("DeleteHabitForm component", () => {
 
     if (!resolveDeleteHabit) throw new Error("resolver not ready");
 
-    // Let the pending request resolve so the test doesn't leak a dangling act() warning.
+    // Let the pending request resolve so the test doesn't leak a dangling act() warning. The
+    // button should stay showing "Deleting..." afterwards - only HabitList clears activeAction,
+    // once the fresh habits array confirms the deletion (not exercised by this standalone render).
     resolveDeleteHabit({});
 
     await waitFor(() => {
-      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
+      expect(mockedDeleteHabit).toHaveBeenCalledTimes(1);
     });
+
+    expect(screen.getByRole("button", { name: /deleting/i })).toBeDisabled();
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 
   test("cancelling tells the parent to clear the active action", async () => {
@@ -147,9 +158,12 @@ describe("DeleteHabitForm component", () => {
     expect(mockSetActiveAction).not.toHaveBeenCalled();
 
     if (!resolveDeleteHabit) throw new Error("resolver not ready");
+    // Let the pending request resolve so the test doesn't leak a dangling act() warning -
+    // setActiveAction is still never called here (see the dedicated success test above for why).
     resolveDeleteHabit({});
     await waitFor(() => {
-      expect(mockSetActiveAction).toHaveBeenCalledWith({ type: "none" });
+      expect(mockedDeleteHabit).toHaveBeenCalledTimes(1);
     });
+    expect(mockSetActiveAction).not.toHaveBeenCalled();
   });
 });

@@ -85,10 +85,11 @@ export function AddHabitForm({
         return;
       }
 
-      // If there's no error, exit edit mode
+      // If there's no error, exit edit mode. Not resetting error here - it's already undefined
+      // from the unconditional setError(undefined) at the top of this function, and nothing
+      // between there and here can have set it again.
       setActiveAction({ type: "none" });
       setHabitName("");
-      setError(undefined);
       setIsPending(false);
     } catch {
       // createHabit itself always resolves with a { message } object rather than throwing - see
