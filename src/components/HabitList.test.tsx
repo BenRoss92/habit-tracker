@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 // HabitList now renders HabitSection per habit, which renders UpdateHabitForm/DeleteHabitForm
 // when editing/deleting, and HabitItem (which calls toggleCompletion) otherwise - those pull in
@@ -16,7 +17,10 @@ jest.mock("@/lib/dates", () => ({
 }));
 
 import { HabitList } from "./HabitList";
+import { deleteHabit } from "@/app/actions";
 import { Completion, Habit } from "@/lib/types";
+
+const mockedDeleteHabit = jest.mocked(deleteHabit);
 
 describe("HabitList component", () => {
   describe("given there are no habits", () => {
@@ -151,6 +155,56 @@ describe("HabitList component", () => {
         expect(
           screen.queryByRole("button", { name: "Mark habit as not done" }),
         ).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("given a habit is being deleted", () => {
+    it("then only clears the active action once the fresh habits array confirms the habit is actually gone, not the instant the delete request resolves", async () => {
+      // Real cross-component proof of the delete-race fix: DeleteHabitForm/HabitSection on their
+      // own can never clear activeAction any more (see their own tests) - this is the one place
+      // with visibility into the full habits array to prove the fix's other half actually works.
+      const habit: Habit = {
+        id: "1",
+        name: "Meditate",
+        created_at: "2026-08-17T11:06:09.855Z",
+      };
+      mockedDeleteHabit.mockResolvedValueOnce({});
+
+      const user = userEvent.setup();
+      const setActiveAction = jest.fn();
+
+      const { rerender } = render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "deleting", habitId: habit.id }}
+          setActiveAction={setActiveAction}
+          completions={[]}
+        />,
+      );
+
+      await user.click(screen.getByText("Delete"));
+
+      await waitFor(() => {
+        expect(mockedDeleteHabit).toHaveBeenCalledWith(habit.id);
+      });
+
+      // The request has resolved, but habits hasn't refreshed yet - activeAction must not have
+      // cleared, so the confirmation card is still showing "Deleting...", not a normal row.
+      expect(setActiveAction).not.toHaveBeenCalled();
+
+      // Now the fresh habits array lands (the habit is gone) - activeAction should clear.
+      rerender(
+        <HabitList
+          habits={[]}
+          activeAction={{ type: "deleting", habitId: habit.id }}
+          setActiveAction={setActiveAction}
+          completions={[]}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(setActiveAction).toHaveBeenCalledWith({ type: "none" });
       });
     });
   });

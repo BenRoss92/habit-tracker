@@ -69,9 +69,11 @@ export function DeleteHabitForm({
         return;
       }
 
-      setActiveAction({ type: "none" });
-      setError(undefined);
-      setIsPending(false);
+      // Success: deliberately leave isPending true and activeAction untouched. Clearing
+      // activeAction is HabitList's job (see its useEffect) - it only does so once the fresh
+      // habits array actually confirms this habit is gone, at which point HabitSection stops
+      // rendering this component at all and it unmounts, rather than briefly flashing back to a
+      // normal, non-deleted row first.
     } catch {
       // deleteHabit itself always resolves with a { message } object rather than throwing - see
       // runHabitMutation in actions.ts - but this guards against the Server Action's own network
