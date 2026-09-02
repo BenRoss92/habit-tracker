@@ -1,12 +1,19 @@
 @import "tailwindcss";
 
-/* Every page should default to having a white background colour and black text,
-  as my design is only styling certain elements on the page (not all elements), 
-  and we want to avoid the user's browser applying different default colours to 
+/* Every page should default to having a set background colour and black text,
+  as my design is only styling certain elements on the page (not all elements),
+  and we want to avoid the user's browser applying different default colours to
   each page if their browser uses different default colours.
   */
 :root {
-  --background: #ffffff;
+  /* #f0f4f8 - a literal value, not var(--color-input-bg-disabled), even though they currently
+  match. Page background and a disabled input's background are unrelated design concepts that
+  only coincide today - referencing that token here would couple them, so a future tweak to one
+  wouldn't silently repaint the other. See docs/design/design.md's palette table, which lists this
+  value only as "Disabled input bg" - there's no separate "page background" entry, since --background
+  itself is a plain :root variable outside the Tailwind theme (see docs/decisions.md's "No dark
+  mode; unused @theme tokens removed" decision). */
+  --background: #f0f4f8;
   --foreground: #171717;
 }
 

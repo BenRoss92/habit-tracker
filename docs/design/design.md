@@ -2,28 +2,31 @@
 
 ## Colour palette
 
-| Name              | Hex     | Used for                                                                                      |
-| ----------------- | ------- | --------------------------------------------------------------------------------------------- |
-| Dark navy         | #1a3a5c | Date heading, habit names, stat values                                                        |
-| Primary blue      | #1a6bbf | Habit checkboxes, today dot outline, Add button border/text, Add form border, Add button fill |
-| Mid blue          | #4a7ab5 | Day strip labels, legend text, stat subtitles                                                 |
-| Circle outline    | #5aaad4 | Day strip circle outlines                                                                     |
-| Light blue stroke | #93c5e8 | Streak badge 1 border                                                                         |
-| Pale blue fill    | #dbeeff | Day strip circle background, streak badge 1 background                                        |
-| Card border       | #b8d4f0 | Habit card borders, stat card borders, empty streak badge border, Cancel button border        |
-| Page background   | #EBF4FF | App background                                                                                |
-| Icon blue         | #7aaad4 | Edit and delete icons, stat labels                                                            |
-| Streak 2 fill     | #64aef5 | Streak badge 2 background                                                                     |
-| Streak 2 border   | #3f8fdb | Streak badge 2 border                                                                         |
-| Streak 3 fill     | #1a6bbf | Streak badge 3 background                                                                     |
-| Streak 3 border   | #1a55a0 | Streak badge 3 border                                                                         |
-| All-done fill     | #1a6bbf | Fully completed day strip circle fill                                                         |
-| All-done border   | #1a55a0 | Fully completed day strip circle border                                                       |
-| Today outline     | #1a6bbf | Today dot blue ring (3px)                                                                     |
-| Error red         | #d93025 | Validation error border, error message text                                                   |
-| Error bg          | #fff8f8 | Input background on validation error                                                          |
-| Disabled          | #b8d4f0 | Disabled button borders, text and backgrounds                                                 |
-| Disabled input bg | #f0f4f8 | Disabled input background                                                                     |
+| Name              | Hex     | Used for                                                                                                 |
+| ----------------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| Dark navy         | #1a3a5c | Date heading, habit names, stat values                                                                   |
+| Primary blue      | #1a6bbf | Habit checkboxes, today dot outline, Add button border/text, Add form border, Add button fill            |
+| Mid blue          | #4a7ab5 | Day strip labels, legend text, stat subtitles                                                            |
+| Circle outline    | #5aaad4 | Day strip circle outlines                                                                                |
+| Light blue stroke | #93c5e8 | Streak badge 1 border                                                                                    |
+| Pale blue fill    | #dbeeff | Day strip circle background, streak badge 1 background                                                   |
+| Card border       | #b8d4f0 | Habit card borders, stat card borders, empty streak badge border, Cancel button border, main card border |
+| Card background   | #EBF4FF | Main card/container background                                                                           |
+| Page background   | #F0F4F8 | Outer page background, behind the main card                                                              |
+| Icon blue         | #7aaad4 | Edit and delete icons, stat labels                                                                       |
+| Streak 2 fill     | #64aef5 | Streak badge 2 background                                                                                |
+| Streak 2 border   | #3f8fdb | Streak badge 2 border                                                                                    |
+| Streak 3 fill     | #1a6bbf | Streak badge 3 background                                                                                |
+| Streak 3 border   | #1a55a0 | Streak badge 3 border                                                                                    |
+| All-done fill     | #1a6bbf | Fully completed day strip circle fill                                                                    |
+| All-done border   | #1a55a0 | Fully completed day strip circle border                                                                  |
+| Today outline     | #1a6bbf | Today dot blue ring (3px)                                                                                |
+| Error red         | #d93025 | Validation error border, error message text                                                              |
+| Error bg          | #fff8f8 | Input background on validation error                                                                     |
+| Disabled          | #b8d4f0 | Disabled button borders, text and backgrounds                                                            |
+| Disabled input bg | #f0f4f8 | Disabled input background                                                                                |
+
+_Page background and Disabled input bg share a value (#f0f4f8) by coincidence, not because they're the same design concept - see `docs/decisions.md`'s "Card border + shadow added to separate the page from the card" entry._
 
 ## Typography
 
@@ -48,7 +51,8 @@ Weights used: 400, 500, 600, 700
 
 ## Layout
 
-- App background: #EBF4FF, border-radius 16px, padding 1.5rem
+- Main card: background #EBF4FF, border-radius 16px, padding 1.5rem, border 1.5px solid #B8D4F0, box-shadow `0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)` — the border/shadow exist because the card background and the page background are too close in contrast (~1:1) to read as separate surfaces on colour alone; see `docs/decisions.md`'s "Card border + shadow added to separate the page from the card" entry
+- Page: background #F0F4F8, sitting behind the centred main card
 - Max width: 600px, centred
 - Habit cards: white background, 1.5px #b8d4f0 border, 14px border radius, 1rem 1.25rem padding
 - Stats row: 3-column grid, 10px gap
