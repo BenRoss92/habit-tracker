@@ -163,6 +163,7 @@
       .s3 {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 5px;
         font-size: 15px;
         font-weight: 700;
@@ -172,19 +173,30 @@
         color: #ffffff;
         border: 2px solid #1a55a0;
         white-space: nowrap;
+        /* min- not a fixed size, so a 2-digit streak or this class's own 🔥 prefix can still grow
+        past this floor rather than being clipped. line-height: 1 stops the default line-height
+        (roughly 1.4-1.5x the font-size) pushing this taller than the floor, which would otherwise
+        make numbered badges visibly taller than the empty .s-empty badge below. */
+        min-width: 44px;
+        min-height: 34px;
+        line-height: 1;
       }
       .s2 {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 5px;
         font-size: 15px;
         font-weight: 700;
         padding: 5px 13px;
         border-radius: 20px;
-        background: #93c5e8;
-        color: #0e3d6e;
-        border: 2px solid #5aaad4;
+        background: #64aef5;
+        color: #ffffff;
+        border: 2px solid #3f8fdb;
         white-space: nowrap;
+        min-width: 44px;
+        min-height: 34px;
+        line-height: 1;
       }
       .s-empty {
         background: transparent;
@@ -193,8 +205,11 @@
         border-radius: 20px;
         display: inline-flex;
         align-items: center;
-        width: 44px;
-        height: 34px;
+        justify-content: center;
+        /* No number to size against, so without an explicit minimum this would render smaller
+        than the numbered badges above. */
+        min-width: 44px;
+        min-height: 34px;
       }
 
       .err-msg {

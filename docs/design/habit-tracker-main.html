@@ -159,6 +159,7 @@
       .streak-badge {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 5px;
         font-size: 15px;
         font-weight: 700;
@@ -166,6 +167,16 @@
         border-radius: 20px;
         white-space: nowrap;
         font-family: "Nunito", sans-serif;
+        /* min- not a fixed size, so a 2-digit streak or the streak-3 🔥 prefix can still grow
+        past this floor rather than being clipped - see .streak-empty below for why it needs one */
+        min-width: 44px;
+        min-height: 34px;
+        /* Without this, the default line-height (1.4-1.5x the 15px font-size) makes any badge
+        with digit text taller than the 34px floor above, while .streak-empty (no text at all) has
+        nothing pushing it past the floor and stays at exactly 34px - a visible size jump between
+        an empty badge and a numbered one. line-height: 1 keeps every numbered badge's natural
+        height under the floor too, so min-height ends up governing all four states equally. */
+        line-height: 1;
       }
       .streak-empty {
         background: transparent;
@@ -174,8 +185,12 @@
         border-radius: 20px;
         display: inline-flex;
         align-items: center;
-        width: 44px;
-        height: 34px;
+        justify-content: center;
+        /* No number to size against, so without an explicit minimum this would render smaller
+        than the numbered badges above - matching .streak-badge's min-width/min-height keeps all
+        four streak states the same size at a glance. */
+        min-width: 44px;
+        min-height: 34px;
       }
       .streak-1 {
         background: #dbeeff;
@@ -183,9 +198,9 @@
         border: 2px solid #93c5e8;
       }
       .streak-2 {
-        background: #93c5e8;
-        color: #0e3d6e;
-        border: 2px solid #5aaad4;
+        background: #64aef5;
+        color: #ffffff;
+        border: 2px solid #3f8fdb;
       }
       .streak-3 {
         background: #1a6bbf;

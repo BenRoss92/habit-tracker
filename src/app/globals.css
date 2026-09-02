@@ -27,6 +27,17 @@ Tailwind generates multiple utility classes for each of variable.
   --color-input-bg-disabled: #f0f4f8;
   --color-action-icon: #7aaad4;
   --color-delete-disabled: #f0a09a;
+  --color-streak-intensity-1-bg: #dbeeff;
+  --color-streak-intensity-1-text: #1a5a9e;
+  --color-streak-intensity-1-border: #93c5e8;
+  /* Recalibrated so 1->2->3 steps down evenly in lightness (25 points each way) rather than the
+  original #93c5e8/#5aaad4 pair, which left streak 2 sitting much closer to streak 1 than to
+  streak 3 - see docs/decisions.md's "Streak badge 2 recalibrated for evenly-spaced lightness
+  steps". No -2-text token anymore: streak 2 now uses text-white directly (see Streak.tsx),
+  matching streak 3's own white text rather than a third one-off text colour. */
+  --color-streak-intensity-2-bg: #64aef5;
+  --color-streak-intensity-2-border: #3f8fdb;
+  --color-streak-intensity-3-border: #1a55a0;
 }
 
 body {

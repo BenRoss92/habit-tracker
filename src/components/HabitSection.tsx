@@ -11,11 +11,13 @@ export function HabitSection({
   activeAction,
   setActiveAction,
   wasDoneToday,
+  streakCount,
 }: {
   habit: Habit;
   activeAction: ActiveAction;
   setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
   wasDoneToday: boolean;
+  streakCount: number;
 }) {
   if (activeAction.type === "deleting" && activeAction.habitId === habit.id) {
     return <DeleteHabitForm habit={habit} setActiveAction={setActiveAction} />;
@@ -31,6 +33,7 @@ export function HabitSection({
       activeAction={activeAction}
       setActiveAction={setActiveAction}
       wasDoneToday={wasDoneToday}
+      streakCount={streakCount}
     />
   );
 }

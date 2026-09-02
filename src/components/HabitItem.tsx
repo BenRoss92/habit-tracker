@@ -10,17 +10,20 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { Dispatch, SetStateAction, useState } from "react";
+import { Streak } from "./Streak";
 
 export function HabitItem({
   habit,
   activeAction,
   setActiveAction,
   wasDoneToday,
+  streakCount,
 }: {
   habit: Habit;
   activeAction: ActiveAction;
   setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
   wasDoneToday: boolean;
+  streakCount: number;
 }) {
   const [error, setError] = useState<string | undefined>();
   // The value we're waiting for wasDoneToday to become, or undefined when nothing's in flight.
@@ -117,6 +120,7 @@ export function HabitItem({
           <span>{habit.name}</span>
         </div>
         <div className="flex gap-2.5">
+          <Streak streakCount={streakCount} />
           {/* Use aria-label on each button to provide an accessible name for screen readers, since
         neither has visible text - only an icon. Both buttons are only clickable when nothing else
         is active: if a different habit is being edited/deleted, or the add-habit form is open,
