@@ -147,6 +147,10 @@ describe("Home page", () => {
       render(page);
 
       expect(screen.getByRole("button", { name: "Mark habit as not done" })).toBeInTheDocument();
+      // Real, full-stack proof that the streak count is actually computed and rendered from
+      // fetched data, not just unit-tested in isolation - one completion dated today, and nothing
+      // else, is exactly the data shape a genuine 1-day streak comes from.
+      expect(screen.getByLabelText("1 day streak count")).toBeInTheDocument();
     });
   });
 

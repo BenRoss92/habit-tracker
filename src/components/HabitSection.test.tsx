@@ -42,6 +42,7 @@ describe("HabitSection component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -52,6 +53,20 @@ describe("HabitSection component", () => {
       expect(screen.queryByText("Delete this habit?")).not.toBeInTheDocument();
     });
 
+    it("then passes streakCount through to the streak badge", () => {
+      render(
+        <HabitSection
+          habit={habit}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          wasDoneToday={false}
+          streakCount={7}
+        />,
+      );
+
+      expect(screen.getByLabelText("7 day streak count")).toBeInTheDocument();
+    });
+
     describe("and the habit was done today", () => {
       it("then shows the toggle as done", () => {
         render(
@@ -60,6 +75,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             wasDoneToday={true}
+            streakCount={0}
           />,
         );
 
@@ -76,6 +92,7 @@ describe("HabitSection component", () => {
           activeAction={{ type: "editing", habitId: "some-other-id" }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -94,6 +111,7 @@ describe("HabitSection component", () => {
           activeAction={{ type: "deleting", habitId: "some-other-id" }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -112,6 +130,7 @@ describe("HabitSection component", () => {
           activeAction={{ type: "deleting", habitId: habit.id }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -130,6 +149,7 @@ describe("HabitSection component", () => {
           activeAction={{ type: "editing", habitId: habit.id }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -151,6 +171,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "editing", habitId: habit.id }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -177,6 +198,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "editing", habitId: habit.id }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -198,6 +220,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "editing", habitId: habit.id }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -220,6 +243,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "deleting", habitId: habit.id }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -246,6 +270,7 @@ describe("HabitSection component", () => {
             activeAction={{ type: "deleting", habitId: habit.id }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 

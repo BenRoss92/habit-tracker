@@ -37,10 +37,27 @@ describe("HabitItem component", () => {
         activeAction={{ type: "none" }}
         setActiveAction={jest.fn()}
         wasDoneToday={false}
+        streakCount={0}
       />,
     );
 
     expect(screen.getByText("Morning run")).toBeInTheDocument();
+  });
+
+  it("then passes streakCount through to the streak badge", () => {
+    // Streak's own states/colours/emoji are Streak.test.tsx's job - this just proves HabitItem
+    // actually forwards the prop it's given, rather than hardcoding or dropping it.
+    render(
+      <HabitItem
+        habit={habit}
+        activeAction={{ type: "none" }}
+        setActiveAction={jest.fn()}
+        wasDoneToday={false}
+        streakCount={5}
+      />,
+    );
+
+    expect(screen.getByLabelText("5 day streak count")).toBeInTheDocument();
   });
 
   describe("given nothing else is active", () => {
@@ -51,6 +68,7 @@ describe("HabitItem component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -69,6 +87,7 @@ describe("HabitItem component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -89,6 +108,7 @@ describe("HabitItem component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -111,6 +131,7 @@ describe("HabitItem component", () => {
           activeAction={activeAction}
           setActiveAction={jest.fn()}
           wasDoneToday={false}
+          streakCount={0}
         />,
       );
 
@@ -129,6 +150,7 @@ describe("HabitItem component", () => {
             activeAction={activeAction}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -149,6 +171,7 @@ describe("HabitItem component", () => {
             activeAction={activeAction}
             setActiveAction={setActiveAction}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -168,6 +191,7 @@ describe("HabitItem component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 
@@ -191,6 +215,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -214,6 +239,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -248,6 +274,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -266,6 +293,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -280,6 +308,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={true}
+              streakCount={0}
             />,
           );
 
@@ -303,6 +332,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -332,6 +362,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={false}
+              streakCount={0}
             />,
           );
 
@@ -356,6 +387,7 @@ describe("HabitItem component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             wasDoneToday={true}
+            streakCount={0}
           />,
         );
 
@@ -379,6 +411,7 @@ describe("HabitItem component", () => {
               activeAction={{ type: "none" }}
               setActiveAction={jest.fn()}
               wasDoneToday={true}
+              streakCount={0}
             />,
           );
 
@@ -400,6 +433,7 @@ describe("HabitItem component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             wasDoneToday={false}
+            streakCount={0}
           />,
         );
 

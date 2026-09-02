@@ -227,12 +227,35 @@
       .streak-badge {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 5px;
         font-size: 15px;
         font-weight: 700;
         padding: 5px 13px;
         border-radius: 20px;
         white-space: nowrap;
+        /* min- not a fixed size, so a 2-digit streak or the streak-3 🔥 prefix can still grow past
+        this floor rather than being clipped. line-height: 1 stops the default line-height
+        (roughly 1.4-1.5x the font-size) pushing this taller than the floor - matters even though
+        this file doesn't render an empty streak badge, since the fix belongs on the shared class
+        every streak state (including a future empty one) would inherit from. */
+        min-width: 44px;
+        min-height: 34px;
+        line-height: 1;
+      }
+      .streak-empty {
+        background: transparent;
+        border: 2px solid #b8d4f0;
+        padding: 5px 13px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        /* No number to size against, so without an explicit minimum this would render smaller
+        than the numbered badges above - matching .streak-badge's min-width/min-height keeps all
+        four streak states the same size at a glance. */
+        min-width: 44px;
+        min-height: 34px;
       }
       .streak-3 {
         background: #1a6bbf;
@@ -278,7 +301,7 @@
           <div class="habit-check"></div>
           <p class="habit-name">Meditate</p>
           <div class="habit-actions">
-            <i class="ti ti-edit habit-action-icon"></i
+            <span class="streak-empty"></span><i class="ti ti-edit habit-action-icon"></i
             ><i class="ti ti-trash habit-action-icon"></i>
           </div>
         </div>
@@ -316,7 +339,7 @@
           <div class="habit-check"></div>
           <p class="habit-name">Meditate</p>
           <div class="habit-actions">
-            <i class="ti ti-edit habit-action-icon"></i
+            <span class="streak-empty"></span><i class="ti ti-edit habit-action-icon"></i
             ><i class="ti ti-trash habit-action-icon"></i>
           </div>
         </div>
@@ -357,7 +380,7 @@
           <div class="habit-check"></div>
           <p class="habit-name">Meditate</p>
           <div class="habit-actions">
-            <i class="ti ti-edit habit-action-icon"></i
+            <span class="streak-empty"></span><i class="ti ti-edit habit-action-icon"></i
             ><i class="ti ti-trash habit-action-icon"></i>
           </div>
         </div>

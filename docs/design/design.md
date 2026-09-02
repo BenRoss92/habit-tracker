@@ -7,13 +7,14 @@
 | Dark navy         | #1a3a5c | Date heading, habit names, stat values                                                        |
 | Primary blue      | #1a6bbf | Habit checkboxes, today dot outline, Add button border/text, Add form border, Add button fill |
 | Mid blue          | #4a7ab5 | Day strip labels, legend text, stat subtitles                                                 |
-| Circle outline    | #5aaad4 | Day strip circle outlines, streak badge 2 border                                              |
+| Circle outline    | #5aaad4 | Day strip circle outlines                                                                     |
 | Light blue stroke | #93c5e8 | Streak badge 1 border                                                                         |
 | Pale blue fill    | #dbeeff | Day strip circle background, streak badge 1 background                                        |
 | Card border       | #b8d4f0 | Habit card borders, stat card borders, empty streak badge border, Cancel button border        |
 | Page background   | #EBF4FF | App background                                                                                |
 | Icon blue         | #7aaad4 | Edit and delete icons, stat labels                                                            |
-| Streak 2 fill     | #93c5e8 | Streak badge 2 background                                                                     |
+| Streak 2 fill     | #64aef5 | Streak badge 2 background                                                                     |
+| Streak 2 border   | #3f8fdb | Streak badge 2 border                                                                         |
 | Streak 3 fill     | #1a6bbf | Streak badge 3 background                                                                     |
 | Streak 3 border   | #1a55a0 | Streak badge 3 border                                                                         |
 | All-done fill     | #1a6bbf | Fully completed day strip circle fill                                                         |
@@ -97,10 +98,18 @@ Each card contains left to right:
 | ------ | ----------- | ----------- | ----------------------------------------- |
 | 0      | transparent | transparent | 2px #b8d4f0 — empty pill shape, no number |
 | 1      | #dbeeff     | #1a5a9e     | 2px #93c5e8                               |
-| 2      | #93c5e8     | #0e3d6e     | 2px #5aaad4                               |
+| 2      | #64aef5     | #ffffff     | 2px #3f8fdb                               |
 | 3+     | #1a6bbf     | #ffffff     | 2px #1a55a0 — with 🔥 emoji prefix        |
 
-All badges: 15px, bold, 5px 13px padding, 20px border radius.
+All badges: 15px, bold, 5px 13px padding, 20px border radius, min-width 44px, min-height 34px, line
+height 1 (a minimum, not a fixed size, so a future 2-digit streak or the 🔥 emoji prefix can still
+grow past it) - centred within that minimum footprint. The 0 state has no number to size against,
+so without an explicit minimum it would render smaller than the numbered states; the minimum keeps
+all four states the same size at a glance. The explicit line height of 1 matters too: without it,
+default line-height (roughly 1.4-1.5x the font size) makes any badge with digit text taller than
+the 34px floor, while the empty 0 state - having no text at all - stays exactly at the floor,
+producing a visible size jump between empty and numbered badges that the min-height alone doesn't
+prevent.
 
 ## Stats row — three cards
 

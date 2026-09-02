@@ -18,9 +18,11 @@ jest.mock("@/lib/dates", () => ({
 
 import { HabitList } from "./HabitList";
 import { deleteHabit } from "@/app/actions";
+import { getTodaysDate } from "@/lib/dates";
 import { Completion, Habit } from "@/lib/types";
 
 const mockedDeleteHabit = jest.mocked(deleteHabit);
+const mockedGetTodaysDate = jest.mocked(getTodaysDate);
 
 describe("HabitList component", () => {
   describe("given there are no habits", () => {
@@ -156,6 +158,192 @@ describe("HabitList component", () => {
           screen.queryByRole("button", { name: "Mark habit as not done" }),
         ).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe("streak count", () => {
+    // getTodaysDate is mocked to "2026-08-27" for this whole file (see the jest.mock at the top),
+    // so "yesterday" is 2026-08-26 and "the day before" is 2026-08-25 throughout these tests.
+    const habit: Habit = { id: "1", name: "Meditate", created_at: "2026-08-17T11:06:09.855Z" };
+
+    function completion(id: string, completedOn: string, habitId = habit.id): Completion {
+      return {
+        id,
+        habit_id: habitId,
+        completed_on: completedOn,
+        created_at: `${completedOn}T09:00:00.000Z`,
+      };
+    }
+
+    it("given no completions at all, then shows a 0 day streak count", () => {
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[]}
+        />,
+      );
+
+      expect(screen.getByLabelText("0 day streak count")).toBeInTheDocument();
+    });
+
+    it("given only a completion from 5 days ago (neither today nor yesterday), then shows a 0 day streak count", () => {
+      // An old, isolated completion doesn't keep a streak alive - it broke as soon as a day was
+      // missed, regardless of how much history exists further back.
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[completion("c1", "2026-08-22")]}
+        />,
+      );
+
+      expect(screen.getByLabelText("0 day streak count")).toBeInTheDocument();
+    });
+
+    it("given a completion dated today only, then shows a 1 day streak count", () => {
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[completion("c1", "2026-08-27")]}
+        />,
+      );
+
+      expect(screen.getByLabelText("1 day streak count")).toBeInTheDocument();
+    });
+
+    it("given a completion dated yesterday only (not done today yet), then still shows a 1 day streak count", () => {
+      // A streak stays alive through yesterday even if today hasn't been ticked off yet - it
+      // shouldn't read as broken just because the user hasn't checked in yet today.
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[completion("c1", "2026-08-26")]}
+        />,
+      );
+
+      expect(screen.getByLabelText("1 day streak count")).toBeInTheDocument();
+    });
+
+    it("given completions today and yesterday, then shows a 2 day streak count", () => {
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[completion("c1", "2026-08-27"), completion("c2", "2026-08-26")]}
+        />,
+      );
+
+      expect(screen.getByLabelText("2 day streak count")).toBeInTheDocument();
+    });
+
+    it("given three consecutive days including today, then shows a 3 day streak count", () => {
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[
+            completion("c1", "2026-08-27"),
+            completion("c2", "2026-08-26"),
+            completion("c3", "2026-08-25"),
+          ]}
+        />,
+      );
+
+      expect(screen.getByLabelText("3 day streak count")).toBeInTheDocument();
+    });
+
+    it("given a gap before an older, isolated completion, then the streak stops at the gap", () => {
+      // today + yesterday are consecutive (streak of 2), but the third completion is 5 days ago -
+      // disconnected from the other two, so it shouldn't extend the streak.
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[
+            completion("c1", "2026-08-27"),
+            completion("c2", "2026-08-26"),
+            completion("c3", "2026-08-22"),
+          ]}
+        />,
+      );
+
+      expect(screen.getByLabelText("2 day streak count")).toBeInTheDocument();
+    });
+
+    it("given two habits with different completion histories, then calculates each habit's streak independently", () => {
+      // Regression guard for a real bug found during development: the streak calculation once
+      // accidentally pooled every habit's completions together instead of filtering to just the
+      // one habit being calculated for, which would have shown this test's two habits with
+      // identical (wrong) streaks instead of their own actual ones.
+      const habitB: Habit = { id: "2", name: "Read", created_at: "2026-08-17T11:07:09.855Z" };
+
+      render(
+        <HabitList
+          habits={[habit, habitB]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[
+            completion("c1", "2026-08-27", habit.id),
+            completion("c2", "2026-08-26", habit.id),
+            completion("c3", "2026-08-25", habit.id),
+            completion("c4", "2026-08-27", habitB.id),
+          ]}
+        />,
+      );
+
+      expect(screen.getByLabelText("3 day streak count")).toBeInTheDocument();
+      expect(screen.getByLabelText("1 day streak count")).toBeInTheDocument();
+    });
+
+    it("given a streak spanning a month boundary, then still counts the days as consecutive", () => {
+      // getTodaysDate is fixed to 2026-08-27 for every other test in this file - override it just
+      // for this test, since a month-boundary streak needs "today" to actually be near a month
+      // boundary, not just the completions being counted.
+      mockedGetTodaysDate.mockReturnValueOnce("2026-09-01");
+
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[
+            completion("c1", "2026-09-01"),
+            completion("c2", "2026-08-31"),
+            completion("c3", "2026-08-30"),
+          ]}
+        />,
+      );
+
+      expect(screen.getByLabelText("3 day streak count")).toBeInTheDocument();
+    });
+
+    it("given a streak spanning a year boundary, then still counts the days as consecutive", () => {
+      mockedGetTodaysDate.mockReturnValueOnce("2027-01-01");
+
+      render(
+        <HabitList
+          habits={[habit]}
+          activeAction={{ type: "none" }}
+          setActiveAction={jest.fn()}
+          completions={[
+            completion("c1", "2027-01-01"),
+            completion("c2", "2026-12-31"),
+            completion("c3", "2026-12-30"),
+          ]}
+        />,
+      );
+
+      expect(screen.getByLabelText("3 day streak count")).toBeInTheDocument();
     });
   });
 
