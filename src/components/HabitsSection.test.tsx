@@ -15,13 +15,17 @@ jest.mock("@/app/actions", () => ({
 
 jest.mock("@/lib/dates", () => ({
   getTodaysDate: jest.fn(() => "2026-08-27"),
+  getTodaysDateHeading: jest.fn(() => "Thursday, 27 Aug"),
 }));
 
 import { HabitsSection } from "@/components/HabitsSection";
 import { createHabit } from "@/app/actions";
+import { getTodaysDate, getTodaysDateHeading } from "@/lib/dates";
 import { Habit } from "@/lib/types";
 
 const mockedCreateHabit = jest.mocked(createHabit);
+const mockedGetTodaysDate = jest.mocked(getTodaysDate);
+const mockedGetTodaysDateHeading = jest.mocked(getTodaysDateHeading);
 
 const habits: Habit[] = [{ id: "1", name: "Meditate", created_at: "2026-08-17T11:06:09.855Z" }];
 
@@ -37,6 +41,32 @@ describe("HabitsSection component", () => {
       expect(screen.getByRole("button", { name: /add habit/i })).toBeEnabled();
       expect(screen.queryByLabelText("Habit name")).not.toBeInTheDocument();
       expect(screen.getByText("Meditate")).toBeInTheDocument();
+    });
+
+    it("then shows today's date heading", () => {
+      // getTodaysDateHeading is mocked (see the jest.mock at the top) so this asserts the mocked
+      // text renders, not that the real formatting logic is correct - that's dates.test.ts's job.
+      render(<HabitsSection habits={habits} completions={[]} />);
+
+      expect(screen.getByText("Thursday, 27 Aug")).toBeInTheDocument();
+    });
+
+    it("then passes the same Date instance to getTodaysDateHeading and getTodaysDate", () => {
+      // Regression guard for the exact bug the shared-`today` refactor exists to prevent: if
+      // HabitsSection ever went back to calling `getTodaysDateHeading(new Date())` and
+      // `getTodaysDate(new Date())` as two independent calls, this is the only thing that would
+      // catch it - two calls made microseconds apart get the same getTime() (real time elapsed is
+      // ~0ms, well under Date's 1ms resolution), so this must assert they're the exact same
+      // object (toBe), not just equal timestamps (toEqual/getTime()) - the latter would pass for
+      // two independent `new Date()` calls just as easily as for one shared value, and wouldn't
+      // actually prove anything.
+      render(<HabitsSection habits={habits} completions={[]} />);
+
+      const headingArg = mockedGetTodaysDateHeading.mock.calls[0]?.[0];
+      const dateArg = mockedGetTodaysDate.mock.calls[0]?.[0];
+
+      expect(headingArg).toBeInstanceOf(Date);
+      expect(headingArg).toBe(dateArg);
     });
   });
 

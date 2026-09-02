@@ -12,17 +12,18 @@ jest.mock("@/app/actions", () => ({
   toggleCompletion: jest.fn(),
 }));
 
-jest.mock("@/lib/dates", () => ({
-  getTodaysDate: jest.fn(() => "2026-08-27"),
-}));
-
 import { HabitList } from "./HabitList";
 import { deleteHabit } from "@/app/actions";
-import { getTodaysDate } from "@/lib/dates";
 import { Completion, Habit } from "@/lib/types";
 
 const mockedDeleteHabit = jest.mocked(deleteHabit);
-const mockedGetTodaysDate = jest.mocked(getTodaysDate);
+
+// HabitList now receives todaysDate as a plain prop (computed once by its parent, HabitsSection)
+// rather than calling getTodaysDate() itself - see lib/dates.ts. Every test below passes this
+// fixed value directly instead of mocking @/lib/dates, so "yesterday" is 2026-08-26 and "the day
+// before" is 2026-08-25 throughout, except the month/year-boundary tests, which pass their own
+// todaysDate value directly instead.
+const TODAYS_DATE = "2026-08-27";
 
 describe("HabitList component", () => {
   describe("given there are no habits", () => {
@@ -33,6 +34,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -58,6 +60,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -92,6 +95,7 @@ describe("HabitList component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             completions={completions}
+            todaysDate={TODAYS_DATE}
           />,
         );
 
@@ -120,6 +124,7 @@ describe("HabitList component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             completions={completions}
+            todaysDate={TODAYS_DATE}
           />,
         );
 
@@ -150,6 +155,7 @@ describe("HabitList component", () => {
             activeAction={{ type: "none" }}
             setActiveAction={jest.fn()}
             completions={completions}
+            todaysDate={TODAYS_DATE}
           />,
         );
 
@@ -162,8 +168,9 @@ describe("HabitList component", () => {
   });
 
   describe("streak count", () => {
-    // getTodaysDate is mocked to "2026-08-27" for this whole file (see the jest.mock at the top),
-    // so "yesterday" is 2026-08-26 and "the day before" is 2026-08-25 throughout these tests.
+    // todaysDate is fixed to TODAYS_DATE (2026-08-27) for this whole describe block (except the
+    // month/year-boundary tests, which pass their own value), so "yesterday" is 2026-08-26 and
+    // "the day before" is 2026-08-25 throughout.
     const habit: Habit = { id: "1", name: "Meditate", created_at: "2026-08-17T11:06:09.855Z" };
 
     function completion(id: string, completedOn: string, habitId = habit.id): Completion {
@@ -182,6 +189,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -197,6 +205,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[completion("c1", "2026-08-22")]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -210,6 +219,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[completion("c1", "2026-08-27")]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -225,6 +235,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[completion("c1", "2026-08-26")]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -238,6 +249,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "none" }}
           setActiveAction={jest.fn()}
           completions={[completion("c1", "2026-08-27"), completion("c2", "2026-08-26")]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -255,6 +267,7 @@ describe("HabitList component", () => {
             completion("c2", "2026-08-26"),
             completion("c3", "2026-08-25"),
           ]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -274,6 +287,7 @@ describe("HabitList component", () => {
             completion("c2", "2026-08-26"),
             completion("c3", "2026-08-22"),
           ]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -298,6 +312,7 @@ describe("HabitList component", () => {
             completion("c3", "2026-08-25", habit.id),
             completion("c4", "2026-08-27", habitB.id),
           ]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -306,11 +321,8 @@ describe("HabitList component", () => {
     });
 
     it("given a streak spanning a month boundary, then still counts the days as consecutive", () => {
-      // getTodaysDate is fixed to 2026-08-27 for every other test in this file - override it just
-      // for this test, since a month-boundary streak needs "today" to actually be near a month
-      // boundary, not just the completions being counted.
-      mockedGetTodaysDate.mockReturnValueOnce("2026-09-01");
-
+      // A month-boundary streak needs "today" to actually be near a month boundary, not just the
+      // completions being counted - pass a different todaysDate directly, just for this test.
       render(
         <HabitList
           habits={[habit]}
@@ -321,6 +333,7 @@ describe("HabitList component", () => {
             completion("c2", "2026-08-31"),
             completion("c3", "2026-08-30"),
           ]}
+          todaysDate="2026-09-01"
         />,
       );
 
@@ -328,8 +341,6 @@ describe("HabitList component", () => {
     });
 
     it("given a streak spanning a year boundary, then still counts the days as consecutive", () => {
-      mockedGetTodaysDate.mockReturnValueOnce("2027-01-01");
-
       render(
         <HabitList
           habits={[habit]}
@@ -340,6 +351,7 @@ describe("HabitList component", () => {
             completion("c2", "2026-12-31"),
             completion("c3", "2026-12-30"),
           ]}
+          todaysDate="2027-01-01"
         />,
       );
 
@@ -368,6 +380,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "deleting", habitId: habit.id }}
           setActiveAction={setActiveAction}
           completions={[]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
@@ -388,6 +401,7 @@ describe("HabitList component", () => {
           activeAction={{ type: "deleting", habitId: habit.id }}
           setActiveAction={setActiveAction}
           completions={[]}
+          todaysDate={TODAYS_DATE}
         />,
       );
 
