@@ -1,7 +1,6 @@
 import { ActiveAction, Completion, Habit } from "@/lib/types";
 import { HabitSection } from "./HabitSection";
 import { Dispatch, SetStateAction, useEffect } from "react";
-import { getTodaysDate } from "@/lib/dates";
 
 // A wrapper, not a merge (Habit & {...}) - wasDoneToday/streakCount are derived, computed-per-
 // render presentation values, not persisted columns, unlike Habit itself (a direct mirror of the
@@ -129,9 +128,11 @@ function getStreakCountForHabit(
   return streakCount;
 }
 
-function getHabitsWithStats(habits: Habit[], completions: Completion[]): HabitWithStats[] {
-  const todaysDate = getTodaysDate();
-
+function getHabitsWithStats(
+  habits: Habit[],
+  completions: Completion[],
+  todaysDate: string,
+): HabitWithStats[] {
   return habits.map((habit) => {
     return {
       habit,
@@ -146,11 +147,13 @@ export function HabitList({
   activeAction,
   setActiveAction,
   completions,
+  todaysDate,
 }: {
   habits: Habit[];
   activeAction: ActiveAction;
   setActiveAction: Dispatch<SetStateAction<ActiveAction>>;
   completions: Completion[];
+  todaysDate: string;
 }) {
   // Clears activeAction back to "none" only once the habit actually being deleted is confirmed
   // gone from the fresh habits array - not the instant DeleteHabitForm's request resolves.
@@ -173,7 +176,7 @@ export function HabitList({
   }, [habits, activeAction, setActiveAction]);
 
   // Return an array with the habits with completions and streaks in one array
-  const habitsWithStats = getHabitsWithStats(habits, completions);
+  const habitsWithStats = getHabitsWithStats(habits, completions, todaysDate);
 
   return (
     <section>

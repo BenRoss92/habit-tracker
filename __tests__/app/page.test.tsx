@@ -22,6 +22,7 @@ jest.mock("@/app/actions", () => ({
 // "completion dated today" test below doesn't silently start failing on a future date.
 jest.mock("@/lib/dates", () => ({
   getTodaysDate: jest.fn(() => "2026-08-27"),
+  getTodaysDateHeading: jest.fn(() => "Thursday, 27 Aug"),
 }));
 
 import Page from "@/app/page";

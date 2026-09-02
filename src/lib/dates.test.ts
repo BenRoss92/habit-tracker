@@ -1,4 +1,4 @@
-import { getTodaysDate } from "./dates";
+import { getTodaysDate, getTodaysDateHeading } from "./dates";
 
 describe("getTodaysDate", () => {
   afterEach(() => {
@@ -43,5 +43,25 @@ describe("getTodaysDate", () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 7, 26, 23, 30)); // 11:30pm local time
 
     expect(getTodaysDate()).toBe("2026-08-26");
+  });
+});
+
+describe("getTodaysDateHeading", () => {
+  // currentDate is a required argument here (unlike getTodaysDate above) - HabitsSection is the
+  // only real caller, and always has one on hand already. So these tests construct a Date
+  // directly rather than faking the system clock - there's no default-to-real-time path to prove
+  // anything about.
+
+  it("returns the weekday name, day number, and short month name as 'Weekday, D Mon'", () => {
+    expect(getTodaysDateHeading(new Date(2026, 6, 6))).toBe("Monday, 6 Jul"); // Monday 6th July 2026
+  });
+
+  it("does not zero-pad a single-digit day", () => {
+    expect(getTodaysDateHeading(new Date(2026, 0, 1))).toBe("Thursday, 1 Jan"); // Thursday 1st January 2026
+  });
+
+  it("abbreviates September to 3 letters ('Sep'), not en-GB's 4-letter 'Sept'", () => {
+    // The whole reason en-US is used over en-GB here - see the comment in getTodaysDateHeading.
+    expect(getTodaysDateHeading(new Date(2026, 8, 21))).toBe("Monday, 21 Sep"); // Monday 21st September 2026
   });
 });
