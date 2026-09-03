@@ -113,13 +113,40 @@ export function HabitItem({
   }
 
   return (
-    <li className="px-5 py-4 bg-white border-line rounded-[14px] border-[1.5px] font-semibold text-[17px] text-heading">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-3.5 items-center">
+    <li className="px-4 py-4 bg-white border-line rounded-[14px] border-[1.5px] font-semibold text-[17px] text-heading">
+      {/* px-4, not design.md's own literal px-5 (1.25rem) spec - shaving 4px off each side hands
+      that width straight to the name (the only flex-growing element in the row - toggle, badge,
+      and the edit/delete group are all fixed/shrink-0), without touching any of the gaps between
+      elements below. Chosen over shrinking one of those inter-element gaps instead, since the
+      proximity grouping they establish (toggle+name close, controls cluster close, a clearly
+      bigger gap between the two) is exactly what you asked to keep the last two times.
+
+      One row, always - toggle on the left, name next to it (wrapping when long, never
+      truncated), streak badge + edit/delete on the right. gap-4 is the real, reserved gap between
+      the name and the controls - not justify-between, which only creates a gap from whatever
+      width happens to be left over and shrinks toward zero exactly as the name grows long enough
+      to need it most. min-w-0 flex-1 on the name's own flex item lets it actually claim all
+      remaining row width and shrink below its content's natural width to wrap into that space
+      (the default min-width: auto otherwise refuses to); shrink-0 on the controls group stops it
+      ever being squeezed instead, so the name - not the controls - is what gives first.
+
+      Proximity keeps the grouping legible within that: toggle+name stay close (gap-3, one content
+      unit), streak badge+edit+delete stay closer still (gap-2, one controls cluster - they're all
+      auxiliary, not something a user needs to read), and gap-4 between the two groups is
+      deliberately the largest of the three, without being so wide that it eats into the name's
+      own wrap width the way a wider gap did in an earlier pass. items-center throughout keeps
+      every element vertically centered against each other regardless of how many lines a long
+      name wraps to.
+
+      p-1 on the edit/delete buttons (bare 17px SVGs otherwise) grows their real tap target to
+      25x25px - short of the 44px ideal, but a real improvement over 17px, chosen to spend as
+      little of the row's width as possible on the controls side. */}
+      <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {renderToggle()}
           <span>{habit.name}</span>
         </div>
-        <div className="flex gap-2.5">
+        <div className="flex shrink-0 items-center gap-2">
           <Streak streakCount={streakCount} />
           {/* Use aria-label on each button to provide an accessible name for screen readers, since
         neither has visible text - only an icon. Both buttons are only clickable when nothing else
@@ -131,7 +158,7 @@ export function HabitItem({
             disabled={activeAction.type !== "none"}
             aria-label="Edit habit"
             type="button"
-            className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+            className="cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-40"
             onClick={() => setActiveAction({ type: "editing", habitId: habit.id })}
           >
             <IconEdit stroke={2} size={17} className="text-action-icon" />
@@ -140,7 +167,7 @@ export function HabitItem({
             disabled={activeAction.type !== "none"}
             aria-label="Delete habit"
             type="button"
-            className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+            className="cursor-pointer p-1 disabled:cursor-not-allowed disabled:opacity-40"
             onClick={() => setActiveAction({ type: "deleting", habitId: habit.id })}
           >
             <IconTrash stroke={2} size={17} className="text-action-icon" />

@@ -79,7 +79,7 @@ describe("Home page", () => {
       const page = await Page();
       render(page);
 
-      expect(screen.getByText("Add habit")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add habit" })).toBeInTheDocument();
     });
   });
 
