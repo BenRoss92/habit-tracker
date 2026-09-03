@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Partial progress ring - lighter blue, ~75% sweep with a gap, evoking "building a streak"
+  as a single continuous stroke rather than discrete dots (which is exactly what made the
+  earlier logo read as noise at small sizes). -->
+  <circle
+    cx="50"
+    cy="50"
+    r="46"
+    fill="none"
+    stroke="#64aef5"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-dasharray="216.77 72.26"
+    transform="rotate(-90 50 50)"
+  />
+  <!-- Main mark: the app's own toggle-button symbol (a filled brand-blue circle with a white
+  checkmark), matching IconCircleCheckFilled exactly as it renders throughout the real app. -->
+  <circle cx="50" cy="50" r="38" fill="#1a6bbf" />
+  <path
+    d="M34 52 L44 62 L68 38"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
