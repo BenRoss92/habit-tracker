@@ -23,11 +23,27 @@ export function HabitsSection({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-[22px] font-bold text-heading">{getTodaysDateHeading(today)}</p>
+      {/* Always one row, button pinned to the top-right - whitespace-nowrap on the date keeps it
+      from ever wrapping internally, and now that the button is icon-only (a compact ~44px square,
+      not a "+ Add habit" pill), both comfortably fit side by side even on narrow mobile widths. */}
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <p className="text-[22px] font-bold text-heading whitespace-nowrap">
+          {getTodaysDateHeading(today)}
+        </p>
         <AddHabitButton setActiveAction={setActiveAction} activeAction={activeAction} />
       </div>
-      <h2 className="mb-3 text-[18px] text-heading font-bold">Habits</h2>
+      {/* Smaller, uppercase and letter-spaced to read as a section label distinct from the 17px
+      habit names beneath it - design.md's own spec has this at 18px/700/#1a3a5c, essentially the
+      same size/colour/weight as the habit-name text, so it doesn't visually separate from the
+      list content it's labelling. Deliberately kept in the same high-contrast heading colour
+      rather than switched to a lighter/muted one for differentiation, though - the design's own
+      existing "stat label" treatment (#7aaad4, the obvious thing to copy for a muted section
+      label) only measures ~2.2-2.5:1 contrast against this app's actual backgrounds, well under
+      WCAG AA's 4.5:1 minimum for text this size. Uppercase + tracking + a smaller size carries the
+      "this is a label, not a name" distinction on its own, without trading away legibility. */}
+      <h2 className="mb-3 text-[13px] font-bold text-heading uppercase tracking-[0.06em]">
+        Habits
+      </h2>
       <AddHabitForm activeAction={activeAction} setActiveAction={setActiveAction} />
       <HabitList
         habits={habits}
