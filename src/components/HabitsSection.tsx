@@ -6,6 +6,7 @@ import { AddHabitButton } from "./AddHabitButton";
 import { useState } from "react";
 import { AddHabitForm } from "./AddHabitForm";
 import { getTodaysDate, getTodaysDateHeading } from "@/lib/dates";
+import { Stats } from "./Stats";
 
 export function HabitsSection({
   habits,
@@ -16,10 +17,12 @@ export function HabitsSection({
 }) {
   const [activeAction, setActiveAction] = useState<ActiveAction>({ type: "none" });
 
-  // Computed once and threaded down (as the derived todaysDate string, to HabitList) rather than
-  // HabitsSection and HabitList each independently calling `new Date()` - see lib/dates.ts's
-  // getTodaysDate/getTodaysDateHeading for why that matters.
+  // Computed once each and threaded down (today as a Date for the heading, todaysDate as the
+  // derived string for HabitList/Stats) rather than every consumer independently calling
+  // `new Date()`/`getTodaysDate()` - see lib/dates.ts's getTodaysDate/getTodaysDateHeading for why
+  // that matters.
   const today = new Date();
+  const todaysDate = getTodaysDate(today);
 
   return (
     <div>
@@ -50,8 +53,9 @@ export function HabitsSection({
         activeAction={activeAction}
         setActiveAction={setActiveAction}
         completions={completions}
-        todaysDate={getTodaysDate(today)}
+        todaysDate={todaysDate}
       />
+      <Stats habits={habits} completions={completions} todaysDate={todaysDate} />
     </div>
   );
 }
