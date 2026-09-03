@@ -9,8 +9,19 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
+  // Needed so Next.js can resolve opengraph-image's relative path into a real absolute URL for
+  // the actual og:image meta tag - without it, Next falls back to http://localhost:3000 (per
+  // `pnpm build`'s own warning), which would break the social-share preview in production since a
+  // crawler can't fetch an image from localhost. Hardcoded to the one stable production domain
+  // (from README.md) rather than read from an env var - this project has a single, unchanging
+  // deployment, so a new NEXT_PUBLIC_SITE_URL plumbed through .env.local/Vercel/CI would add real
+  // moving parts for no benefit here.
+  metadataBase: new URL("https://habit-tracker-eta-gold.vercel.app"),
   title: "Habit Tracker",
   description: "A habit tracking app for building and maintaining daily habits.",
+  appleWebApp: {
+    title: "Habit Tracker",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
