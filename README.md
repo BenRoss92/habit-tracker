@@ -8,7 +8,7 @@ Next.js 16, React, TypeScript, Tailwind CSS, Supabase (PostgreSQL), Jest, React 
 
 ## AI tooling
 
-Built using Claude Code and the Context7 MCP server for up-to-date, version-specific library documentation during development.
+Built using Claude Code — see [AI-assisted development with Claude Code](#ai-assisted-development-with-claude-code) for details.
 
 ## Live demo
 
@@ -71,6 +71,7 @@ This project was built using Claude Code, applying practices covered in Anthropi
 
 - An Explore → Plan → Code → Commit workflow for each feature, using Plan Mode to draft and review a plan before any code was generated
 - A `CLAUDE.md` file capturing project conventions, stack decisions and recurring gotchas, so context didn't need rediscovering each session
+- The Context7 MCP server for current, version-specific library documentation (Next.js, React, Supabase, Tailwind) during development, rather than relying on training data that can lag behind fast-moving framework APIs
 - Custom Skills (e.g. commit and push/PR skills) built to replace a deprecated course command, scoped for a solo-repo workflow
 - Git-safety and formatting hooks (blocking direct commits to `main`, auto-running Prettier) for behaviour that had to run every time, not just when prompted
 - Context management via `/compact` between features and `/clear` when starting unrelated work, to keep sessions focused
