@@ -55,8 +55,28 @@ describe("given an error occurred", () => {
 
 This applies to component/UI tests, which describe end-user-observable behaviour. Data-layer tests (e.g. `fetchHabits()`'s success/failure contract) are plain descriptive unit tests instead, since their caller is other code, not an end user.
 
+Test coverage (as of 4th Sep 2026): 186 tests across 20 suites, 99.75% statement coverage, 98.89% branch coverage and 100% function coverage. Run `pnpm test -- --coverage` for current numbers.
+
 ### Vertical Slice Delivery
 
 A software delivery practice where each feature is built as a thin slice, cutting through all layers of the stack - e.g. from UI through to the business logic and to the database - so that the feature is immediately usable by an end user. This is distinct from Vertical Slice Architecture, which is about how code is organised.
 
 Benefits include reduced project risk, shorter feedback loops, faster delivery of value to end users and no unnecessary code (eliminating waste).
+
+### AI-assisted development with Claude Code
+
+This project was built using Claude Code, applying practices covered in Anthropic's Claude Code 101 course:
+
+**Workflow & practices**
+
+- An Explore → Plan → Code → Commit workflow for each feature, using Plan Mode to draft and review a plan before any code was generated
+- A `CLAUDE.md` file capturing project conventions, stack decisions and recurring gotchas, so context didn't need rediscovering each session
+- Custom Skills (e.g. commit and push/PR skills) built to replace a deprecated course command, scoped for a solo-repo workflow
+- Git-safety and formatting hooks (blocking direct commits to `main`, auto-running Prettier) for behaviour that had to run every time, not just when prompted
+- Context management via `/compact` between features and `/clear` when starting unrelated work, to keep sessions focused
+
+**Critical review, not blind acceptance**
+
+- Reviewed and corrected AI-generated code rather than accepting it as-is - e.g. simplified an over-engineered form-editing implementation once a simpler pattern (`useState` instead of `useActionState`) was confirmed to work just as well
+- Used GitHub Copilot to independently walk through Claude-generated code line by line before staging/committing, as an extra comprehension and correctness check
+- Made explicit engineering trade-off calls with Claude as a sounding board rather than default acceptance - e.g. deciding against optimistic UI updates for habit toggling in favour of a simpler non-optimistic pattern, and choosing Zod server-side validation over redundant client-side HTML validation
