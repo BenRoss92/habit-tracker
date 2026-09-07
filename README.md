@@ -8,7 +8,7 @@ Next.js 16, React, TypeScript, Tailwind CSS, Supabase (PostgreSQL), Jest, React 
 
 ## AI tooling
 
-Built using Claude Code — see [AI-assisted development with Claude Code](#ai-assisted-development-with-claude-code) for details.
+Built using Claude Code - see [AI-assisted development with Claude Code](#ai-assisted-development-with-claude-code) for details.
 
 ## Live demo
 

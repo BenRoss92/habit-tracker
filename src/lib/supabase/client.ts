@@ -11,8 +11,8 @@ import { Database } from "@/lib/database.types";
 //
 // Runtime (not just compile-time) check: TypeScript can't verify these env
 // vars are actually set at runtime, only that they're typed as
-// `string | undefined`. Checking here — instead of a non-null assertion
-// (`url!`) — turns a missing env var into a clear error message instead of
+// `string | undefined`. Checking here - instead of a non-null assertion
+// (`url!`) - turns a missing env var into a clear error message instead of
 // a confusing failure inside createClient().
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;

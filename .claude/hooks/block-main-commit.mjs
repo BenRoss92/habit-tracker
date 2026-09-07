@@ -28,7 +28,7 @@ process.stdin.on("end", () => {
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
   } catch {
-    process.exit(0); // not a git repo (or no commits yet) — let Git's own errors handle it
+    process.exit(0); // not a git repo (or no commits yet) - let Git's own errors handle it
   }
 
   if (PROTECTED_BRANCHES.has(branch)) {
