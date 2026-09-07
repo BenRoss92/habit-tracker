@@ -5,7 +5,7 @@ import { join } from "node:path";
 // See docs/decisions.md's "Open Graph share image" entry for why this is generated in code
 // (via next/og's ImageResponse) rather than a static PNG dropped in by hand.
 
-export const alt = "Habit Tracker — a habit tracking app for building and maintaining daily habits";
+export const alt = "Habit Tracker - a habit tracking app for building and maintaining daily habits";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

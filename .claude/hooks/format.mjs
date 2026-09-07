@@ -21,7 +21,7 @@ process.stdin.on("end", () => {
   }
 
   if (!filePath || !existsSync(filePath)) process.exit(0);
-  if (!existsSync(prettierBin)) process.exit(0); // Prettier not installed — nothing to do
+  if (!existsSync(prettierBin)) process.exit(0); // Prettier not installed - nothing to do
 
   try {
     execFileSync("pnpm", ["exec", "prettier", "--write", "--ignore-unknown", filePath], {

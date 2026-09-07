@@ -3,7 +3,7 @@
 -- has
 -- no user accounts and therefore no different user roles - only the one anon role which needs to
 -- have access to all operations and these tables.
--- No auth/accounts — every row is part of
+-- No auth/accounts - every row is part of
 -- one shared dataset, so RLS policies below intentionally allow full access
 -- to the anon role rather than scoping by user.
 CREATE TABLE habits(
@@ -23,7 +23,7 @@ CREATE TABLE completions(
 -- Add Row Level Security to the 'habits' table
 -- RLS is enabled explicitly (rather than left disabled) as the standard
 -- secure-by-default pattern, even though the policies below permit
--- everything — see docs/decisions.md.
+-- everything - see docs/decisions.md.
 ALTER TABLE habits ENABLE ROW LEVEL SECURITY;
 
 ALTER TABLE completions ENABLE ROW LEVEL SECURITY;
@@ -63,7 +63,7 @@ CREATE POLICY "Allow all access to completions" ON completions
 -- explicitly allow all rows for one or more operations to be returned for that user. Protects
 -- whether or not a user can use certain rows.
 -- "Automatically expose new tables" is disabled at the project level (see
--- docs/decisions.md), so table-level grants to anon must be explicit here —
+-- docs/decisions.md), so table-level grants to anon must be explicit here -
 -- RLS policies alone don't grant the underlying SQL privileges.
 GRANT SELECT, INSERT, UPDATE, DELETE ON habits TO anon;
 

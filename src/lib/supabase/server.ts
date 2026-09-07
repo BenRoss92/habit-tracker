@@ -7,7 +7,7 @@ import { Database } from "@/lib/database.types";
 // This is a deliberately different pattern from client.ts's shared
 // singleton. A browser client belongs to one user, so sharing one
 // instance is safe. A server, by contrast, handles requests from many
-// different users concurrently — the standard safe default is a fresh
+// different users concurrently - the standard safe default is a fresh
 // client per request, so no state (most importantly a logged-in user's
 // session, if this app were to later add in auth) can ever leak between unrelated
 // requests. This app has no login yet, so there's no session to leak
@@ -15,7 +15,7 @@ import { Database } from "@/lib/database.types";
 
 // Auth persistence is explicitly disabled below for two reasons: there's
 // no session to persist (no login), and Supabase's client normally falls
-// back to the browser's localStorage to persist a session — which doesn't
+// back to the browser's localStorage to persist a session - which doesn't
 // exist in Node.js (the server runtime), so leaving this on would risk
 // warnings or errors for a feature that this app doesn't use.
 export function createServerClient() {

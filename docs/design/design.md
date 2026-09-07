@@ -1,4 +1,4 @@
-# Habit Tracker — Design Reference
+# Habit Tracker - Design Reference
 
 ## Colour palette
 
@@ -51,7 +51,7 @@ Weights used: 400, 500, 600, 700
 
 ## Layout
 
-- Main card: background #EBF4FF, border-radius 16px, padding 1.5rem, border 1.5px solid #B8D4F0, box-shadow `0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)` — the border/shadow exist because the card background and the page background are too close in contrast (~1:1) to read as separate surfaces on colour alone; see `docs/decisions.md`'s "Card border + shadow added to separate the page from the card" entry
+- Main card: background #EBF4FF, border-radius 16px, padding 1.5rem, border 1.5px solid #B8D4F0, box-shadow `0 1px 3px rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)` - the border/shadow exist because the card background and the page background are too close in contrast (~1:1) to read as separate surfaces on colour alone; see `docs/decisions.md`'s "Card border + shadow added to separate the page from the card" entry
 - Page: background #F0F4F8, sitting behind the centred main card
 - Max width: 600px, centred
 - Habit cards: white background, 1.5px #b8d4f0 border, 14px border radius, 1rem 1.25rem padding
@@ -60,12 +60,12 @@ Weights used: 400, 500, 600, 700
 
 ## Header
 
-- Left: current date only (e.g. "Sunday, 6 Jul") — 22px, bold, #1a3a5c. No "Today —" prefix.
-- Right: "Add habit" button — white background, 2px #1a6bbf border, 20px border radius, #1a6bbf text, 14px, bold, 9px 20px padding, + icon to left of text
+- Left: current date only (e.g. "Sunday, 6 Jul") - 22px, bold, #1a3a5c. No "Today -" prefix.
+- Right: "Add habit" button - white background, 2px #1a6bbf border, 20px border radius, #1a6bbf text, 14px, bold, 9px 20px padding, + icon to left of text
 
 ## Day strip
 
-Shows a rolling 7-day window ending today (not a fixed Mon–Sun calendar week).
+Shows a rolling 7-day window ending today (not a fixed Mon-Sun calendar week).
 Each dot is 32px wide and tall, circular.
 
 ### Three dot states
@@ -81,10 +81,10 @@ Each dot is 32px wide and tall, circular.
 
 Four items in a row:
 
-- ⭐ filled blue dot — "All habits completed"
-- Half-filled dot — "Some habits completed"
-- Empty outlined dot — "Nothing completed"
-- Blue outlined dot — "Today"
+- ⭐ filled blue dot - "All habits completed"
+- Half-filled dot - "Some habits completed"
+- Empty outlined dot - "Nothing completed"
+- Blue outlined dot - "Today"
 
 ## Habit cards
 
@@ -96,14 +96,14 @@ Each card contains left to right:
 - Edit icon (ti-edit, 17px, #7aaad4)
 - Delete icon (ti-trash, 17px, #7aaad4)
 
-## Streak badge — four visual states
+## Streak badge - four visual states
 
 | Streak | Background  | Text colour | Border                                    |
 | ------ | ----------- | ----------- | ----------------------------------------- |
-| 0      | transparent | transparent | 2px #b8d4f0 — empty pill shape, no number |
+| 0      | transparent | transparent | 2px #b8d4f0 - empty pill shape, no number |
 | 1      | #dbeeff     | #1a5a9e     | 2px #93c5e8                               |
 | 2      | #64aef5     | #ffffff     | 2px #3f8fdb                               |
-| 3+     | #1a6bbf     | #ffffff     | 2px #1a55a0 — with 🔥 emoji prefix        |
+| 3+     | #1a6bbf     | #ffffff     | 2px #1a55a0 - with 🔥 emoji prefix        |
 
 All badges: 15px, bold, 5px 13px padding, 20px border radius, min-width 44px, min-height 34px, line
 height 1 (a minimum, not a fixed size, so a future 2-digit streak or the 🔥 emoji prefix can still
@@ -115,7 +115,7 @@ the 34px floor, while the empty 0 state - having no text at all - stays exactly 
 producing a visible size jump between empty and numbered badges that the min-height alone doesn't
 prevent.
 
-## Stats row — three cards
+## Stats row - three cards
 
 | Card         | Label        | Value format | Subtitle         |
 | ------------ | ------------ | ------------ | ---------------- |
@@ -127,23 +127,23 @@ Stat label: 11px, bold, uppercase, #7aaad4, letter-spacing 0.06em
 Stat value: 22px, bold, #1a3a5c
 Stat subtitle: 12px, weight 500, #4a7ab5
 
-## Add habit form — three states
+## Add habit form - three states
 
 The form appears inline at the top of the habit list when the user clicks "Add habit".
 The "Add habit" header button fades to 40% opacity for as long as the form is open - one single style covering all three states below (idle, error, and pending alike), not a separate look for pending. The button is already non-interactive in every one of these states, so there's nothing further a distinct "pending" style would communicate.
 
-### State 1 — Form open (idle)
+### State 1 - Form open (idle)
 
 - White card with 1.5px #1a6bbf blue border, 14px border radius
-- Label: "Habit name" — 12px, bold, uppercase, #1a3a5c
+- Label: "Habit name" - 12px, bold, uppercase, #1a3a5c
 - Input: 15px, 9px 12px padding, 10px border radius, 1.5px #b8d4f0 border
 - Input focuses to 1.5px #1a6bbf border
 - Placeholder text: "e.g. Morning run"
 - Two buttons below input:
-  - "Add" — filled #1a6bbf background, white text, 20px border radius
-  - "Cancel" — white background, 1.5px #b8d4f0 border, #4a7ab5 text, 20px border radius
+  - "Add" - filled #1a6bbf background, white text, 20px border radius
+  - "Cancel" - white background, 1.5px #b8d4f0 border, #4a7ab5 text, 20px border radius
 
-### State 2 — Validation error
+### State 2 - Validation error
 
 - Form card border changes to #d93025 red
 - Input border changes to #d93025, input background changes to #fff8f8
@@ -152,7 +152,7 @@ The "Add habit" header button fades to 40% opacity for as long as the form is op
 - Error text: "Please enter a habit name"
 - Add and Cancel buttons remain enabled so the user can fix or abandon
 
-### State 3 — Submission pending
+### State 3 - Submission pending
 
 - Form card opacity drops to 0.6
 - Input is disabled, shows the typed habit name, background #f0f4f8, text #b8d4f0
@@ -161,7 +161,7 @@ The "Add habit" header button fades to 40% opacity for as long as the form is op
   - Spinner: 14px rotating circle, white, positioned to the left of the text
   - "Adding…" text sits to the right of the spinner
   - Both are horizontally centred within the button
-  - Button size and position remain unchanged — only the contents change
+  - Button size and position remain unchanged - only the contents change
   - Button background changes to #b8d4f0 to signal disabled state
 - Cancel button is disabled, border and text change to #b8d4f0
 - "Add habit" header button is disabled - same 40% opacity fade as States 1 and 2 (see above), not a separate style
