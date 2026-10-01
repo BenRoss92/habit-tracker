@@ -37,6 +37,12 @@ export default defineConfig({
     {
       name: "setup db",
       testMatch: /global\.setup\.ts/,
+      // Default 30s test timeout isn't enough on a cold CI runner and made the e2e GitHub Actions
+      // workflow fail as it needed more time to run: supabase start has to pull ~8-10 Docker images
+      // from scratch (no cache, unlike local/act runs reusing a warm Docker environment) before
+      // supabase db reset can even begin. Generous for now since there's no real timing data yet
+      // from a completed cold run - worth tightening once there is.
+      timeout: 180_000,
     },
     {
       name: "chromium",
