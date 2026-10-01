@@ -78,9 +78,10 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: "pnpm start", // Launches the built production Next.js server
+    url: "http://localhost:3000", // The URL Playwright waits for before running tests
+    reuseExistingServer: !process.env.CI, // Locally reuses a running server; always spins fresh in CI
+    timeout: 120000, // 2-minute buffer for Next.js to fully initialize
+  },
 });

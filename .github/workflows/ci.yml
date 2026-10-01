@@ -15,7 +15,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v7
       - name: Install PNPM
-        uses: pnpm/setup@v2
+        uses: pnpm/setup@v3
         with:
           # Install into the CI runner: the same major version of
           # Node I'm using in my project locally and in production

@@ -37,6 +37,7 @@ yarn-error.log*
 # Explicitly track only the example local
 # secret file - no other potential secret files
 !.env.local.example
+!.env.test
 
 # vercel
 .vercel
