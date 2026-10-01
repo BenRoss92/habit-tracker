@@ -1,0 +1,55 @@
+name: E2E Testing
+on:
+  pull_request:
+    branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  e2e-testing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - name: Install PNPM
+        uses: pnpm/setup@v3
+        with:
+          # Install into the CI runner: the same major version of
+          # Node I'm using in my project locally and in production
+          runtime: node@24
+          cache: true
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v3
+        # No "version" input: supabase/setup-cli reads pnpm-lock.yaml itself and installs whatever
+        # version the "supabase" devDependency in package.json actually resolves to - see
+        # docs/decisions.md's entry on this for why that's preferred over a separate manual pin.
+
+      - name: Start Supabase local stack
+        run: supabase start
+
+      - name: Export local Supabase stack values as environment variables
+        # Instead of hardcoding the environment variables that the local stack (not the production stack) needs, grab them from the local supabase stack that is running and use them as environment variables in this GitHub Workflow, to then be used as environment variables by the Next.js source and Playwright tests referencing them.
+        # $GITHUB_ENV is a path GitHub Actions itself provides, pointing at a special temporary file for the current job. Any KEY=value line appended to that file gets turned into a real environment variable for every step that runs after this one, for the rest of the job.
+        # Use sed to remove quotes from the fetched key-pair values as these make the environment variable values invalid.
+        run: |
+          supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.publishable_key=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY \
+            | sed -E 's/="(.*)"$/=\1/' \
+            >> "$GITHUB_ENV"
+
+      - name: Run build
+        run: pnpm build
+
+      # Install Playwright's system-level dependencies and browsers
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      # Run the test suite (The app starts automatically inside this step via webServer)
+      - name: Run Playwright Tests
+        run: pnpm test:e2e
